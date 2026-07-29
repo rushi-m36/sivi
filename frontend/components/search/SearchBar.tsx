@@ -7,7 +7,10 @@ interface SearchBarProps {
   initialValue?: string;
 }
 
-export default function SearchBar({ onSearch, initialValue = "" }: SearchBarProps) {
+export default function SearchBar({
+  onSearch,
+  initialValue = "",
+}: SearchBarProps) {
   const [query, setQuery] = useState(initialValue);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -24,7 +27,7 @@ export default function SearchBar({ onSearch, initialValue = "" }: SearchBarProp
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search videos..."
-          className="w-full h-10 rounded-full border border-slate-300 bg-slate-50 px-4 pr-10 text-sm focus:border-red-500 focus:bg-white focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-red-500"
+          className="w-full h-10 rounded-full border border-slate-300 bg-slate-50 px-4 pr-10 text-sm focus:border-red-500 focus:bg-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-red-500"
         />
         <button
           type="submit"

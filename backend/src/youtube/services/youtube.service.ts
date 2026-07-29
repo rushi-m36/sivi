@@ -29,7 +29,6 @@ export class YoutubeService {
     this.logger.log(
       `Searching videos for query: "${query}" (limit: ${maxResults})`,
     );
-    console.log(maxResults, typeof maxResults);
 
     try {
       const searchResponse = await this.youtube.search.list({

@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class SearchQueryDto {
   @IsString()
@@ -9,8 +10,9 @@ export class SearchQueryDto {
   pageToken?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(50)
-  maxResults?: number;
+  maxResults: number = 10;
 }

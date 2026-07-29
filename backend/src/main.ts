@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Enable validation globally
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
@@ -22,4 +22,3 @@ async function bootstrap() {
   console.log(`Application is running on: http://localhost:${port}/api`);
 }
 bootstrap();
-

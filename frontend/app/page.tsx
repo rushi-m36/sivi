@@ -17,9 +17,9 @@ export default function Home() {
     try {
       console.log(`the query: ${encodeURIComponent(query)}`);
       const response = await fetch(
-        `http://localhost:3001/api/youtube/search?q=${encodeURIComponent(
-          query
-        )}&maxResults=10`
+        `${
+          process.env.NEXT_PUBLIC_BACKEND_URL
+        }/youtube/search?q=${encodeURIComponent(query)}&maxResults=10`
       );
       if (!response.ok) {
         let errorMsg = "Failed to fetch videos from the backend";
