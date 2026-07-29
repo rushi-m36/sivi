@@ -3,7 +3,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import SearchBar from "../../components/search/SearchBar";
+
+import Navbar from "../../components/layout/Navbar";
 import VideoGrid from "../../components/video/VideoGrid";
 import { YouTubeVideo } from "../../types";
 
@@ -66,30 +67,8 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-xl dark:border-zinc-800 dark:bg-black/90">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
-          {/* Logo */}
-          <button
-            onClick={() => router.push("/")}
-            className="text-2xl font-black tracking-tight text-black dark:text-white"
-          >
-            Sivi
-          </button>
+      <Navbar query={query} onSearch={handleSearch} />
 
-          {/* Search */}
-          <div className="mx-6 flex max-w-xl flex-1">
-            <SearchBar onSearch={handleSearch} initialValue={query} />
-          </div>
-
-          {/* Donate */}
-          <button className="rounded-lg border border-black bg-black px-5 py-2 text-sm font-medium text-white transition hover:bg-white hover:text-black dark:border-white dark:bg-white dark:text-black dark:hover:bg-black dark:hover:text-white">
-            Donate
-          </button>
-        </div>
-      </header>
-
-      {/* Main */}
       <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
         {error && (
           <div className="mb-6 rounded-lg border border-gray-300 bg-gray-100 px-4 py-3 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white">
