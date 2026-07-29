@@ -41,7 +41,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchVideos(searchQuery);
+    if (searchQuery !== "" || null) {
+      fetchVideos(searchQuery);
+    }
   }, []);
 
   const handleSearch = (query: string) => {
@@ -57,9 +59,6 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <span className="text-2xl font-black tracking-tight text-red-600">
               Sivi
-            </span>
-            <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-600 dark:bg-red-950/50 dark:text-red-400">
-              MVP
             </span>
           </div>
 
