@@ -27,6 +27,9 @@ export function formatViewCount(countStr: string): string {
   const count = parseInt(countStr, 10);
   if (isNaN(count)) return '0 views';
   
+  if (count >= 1000000000) {
+    return `${(count / 1000000000).toFixed(1)}B views`;
+  }
   if (count >= 1000000) {
     return `${(count / 1000000).toFixed(1)}M views`;
   }
@@ -34,4 +37,23 @@ export function formatViewCount(countStr: string): string {
     return `${(count / 1000).toFixed(1)}K views`;
   }
   return `${count} views`;
+}
+
+export function formatPublishedAt(dateStr: string): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
+  if (diffMonths > 0) return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+  if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffMins > 0) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  return 'just now';
 }

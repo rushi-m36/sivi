@@ -2,7 +2,7 @@ import { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
 
 export class SearchQueryDto {
   @IsString()
-  q: string;
+  q;
 
   @IsOptional()
   @IsString()

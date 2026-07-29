@@ -1,8 +1,55 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import SearchBar from "../components/search/SearchBar";
 import VideoGrid from "../components/video/VideoGrid";
+import { YouTubeVideo } from "../types";
 
 export default function Home() {
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("web development");
+
+  const fetchVideos = async (query: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log(`the query: ${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `http://localhost:3001/api/youtube/search?q=${encodeURIComponent(
+          query
+        )}&maxResults=10`
+      );
+      if (!response.ok) {
+        let errorMsg = "Failed to fetch videos from the backend";
+        try {
+          const errData = await response.json();
+          if (errData && errData.message) {
+            errorMsg = errData.message;
+          }
+        } catch (_) {}
+        throw new Error(errorMsg);
+      }
+      const data = await response.json();
+      setVideos(data.videos || []);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "An error occurred while fetching videos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVideos(searchQuery);
+  }, []);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    fetchVideos(query);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
       {/* Header / Navbar */}
@@ -18,7 +65,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-1 max-w-md mx-8">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} initialValue={searchQuery} />
           </div>
 
           <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-slate-700 dark:text-slate-300">
@@ -31,12 +78,34 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-            Search Results
+            {searchQuery
+              ? `Search Results for "${searchQuery}"`
+              : "Trending Videos"}
           </h2>
           <p className="text-sm text-slate-500 dark:text-zinc-400">
-            Type in the search bar above to fetch videos.
+            Showing results from YouTube API.
           </p>
         </div>
+
+        {error && (
+          <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/30 dark:text-red-400 mb-6">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="flex flex-col gap-2 animate-pulse">
+                <div className="aspect-video w-full rounded-xl bg-slate-200 dark:bg-zinc-800" />
+                <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-zinc-800" />
+                <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-zinc-800" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <VideoGrid videos={videos} />
+        )}
       </main>
     </div>
   );
