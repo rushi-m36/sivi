@@ -9,13 +9,12 @@ export default function Home() {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("web development");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchVideos = async (query: string) => {
     setLoading(true);
     setError(null);
     try {
-      console.log(`the query: ${encodeURIComponent(query)}`);
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_BACKEND_URL
@@ -76,17 +75,6 @@ export default function Home() {
 
       {/* Main Content Area */}
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-            {searchQuery
-              ? `Search Results for "${searchQuery}"`
-              : "Trending Videos"}
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-zinc-400">
-            Showing results from YouTube API.
-          </p>
-        </div>
-
         {error && (
           <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/30 dark:text-red-400 mb-6">
             {error}
