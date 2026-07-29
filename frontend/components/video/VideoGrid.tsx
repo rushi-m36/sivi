@@ -1,6 +1,6 @@
-import React from 'react';
-import VideoCard from './VideoCard';
-import { YouTubeVideo } from '../../types';
+import React from "react";
+import VideoCard from "./VideoCard";
+import { YouTubeVideo } from "../../types";
 
 interface VideoGridProps {
   videos: YouTubeVideo[];
@@ -9,8 +9,10 @@ interface VideoGridProps {
 export default function VideoGrid({ videos }: VideoGridProps) {
   if (!videos || videos.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-zinc-400">
-        No videos found. Try a different search.
+      <div className="flex items-center justify-center py-20 text-center">
+        <p className="text-lg font-medium text-slate-700 dark:text-zinc-200">
+          Search for what you came here to find.
+        </p>
       </div>
     );
   }

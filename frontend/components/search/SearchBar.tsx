@@ -20,25 +20,57 @@ export default function SearchBar({
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
-      <div className="relative flex-1">
+    <form onSubmit={handleSearch} className="w-full">
+      <div className="relative">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search videos..."
-          className="w-full h-10 rounded-full border border-slate-300 bg-slate-50 px-4 pr-10 text-sm focus:border-red-500 focus:bg-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-red-500"
+          className="
+        h-11
+        w-full
+        rounded-full
+        border
+        border-gray-300
+        bg-white
+        px-5
+        pr-12
+        text-sm
+        text-black
+        placeholder:text-gray-500
+        outline-none
+        transition-all
+        duration-200
+        focus:border-black
+        dark:border-zinc-700
+        dark:bg-black
+        dark:text-white
+        dark:placeholder:text-zinc-500
+        dark:focus:border-white
+      "
         />
+
         <button
           type="submit"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          className="
+        absolute
+        right-4
+        top-1/2
+        -translate-y-1/2
+        text-gray-500
+        transition-colors
+        hover:text-black
+        dark:text-zinc-400
+        dark:hover:text-white
+      "
+          aria-label="Search"
         >
           <svg
             className="h-5 w-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
           >
             <path
               strokeLinecap="round"

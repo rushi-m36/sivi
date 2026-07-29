@@ -16,8 +16,6 @@ export class YoutubeController {
 
   @Get('search')
   async search(@Query() queryDto: SearchQueryDto): Promise<ISearchResult> {
-    console.log('Controller hit');
-    console.log(queryDto);
     return this.youtubeService.searchVideos(
       queryDto.q,
       queryDto.pageToken,

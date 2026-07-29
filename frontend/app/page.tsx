@@ -52,41 +52,45 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
-      {/* Header / Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-black tracking-tight text-red-600">
-              Sivi
-            </span>
-          </div>
+    <div className="min-h-screen bg-white dark:bg-black">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-xl dark:border-zinc-800 dark:bg-black/90">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
+          {/* Logo */}
+          <h1 className="text-2xl font-black tracking-tight text-black dark:text-white">
+            Sivi
+          </h1>
 
-          <div className="flex flex-1 max-w-md mx-8">
+          {/* Search */}
+          <div className="mx-6 flex max-w-xl flex-1">
             <SearchBar onSearch={handleSearch} initialValue={searchQuery} />
           </div>
 
-          <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-sm text-slate-700 dark:text-slate-300">
-            U
-          </div>
+          {/* Donate */}
+          <button className="rounded-lg border border-black bg-black px-5 py-2 text-sm font-medium text-white transition hover:bg-white hover:text-black dark:border-white dark:bg-white dark:text-black dark:hover:bg-black dark:hover:text-white">
+            Donate
+          </button>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="container mx-auto px-4 py-8">
+      {/* Main */}
+      <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
         {error && (
-          <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/30 dark:text-red-400 mb-6">
+          <div className="mb-6 rounded-lg border border-gray-300 bg-gray-100 px-4 py-3 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white">
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex flex-col gap-2 animate-pulse">
-                <div className="aspect-video w-full rounded-xl bg-slate-200 dark:bg-zinc-800" />
-                <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-zinc-800" />
-                <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-zinc-800" />
+              <div
+                key={i}
+                className="animate-pulse rounded-xl border border-gray-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900"
+              >
+                <div className="aspect-video rounded-lg bg-gray-200 dark:bg-zinc-800" />
+                <div className="mt-4 h-4 w-3/4 rounded bg-gray-200 dark:bg-zinc-800" />
+                <div className="mt-2 h-3 w-1/2 rounded bg-gray-200 dark:bg-zinc-800" />
               </div>
             ))}
           </div>
