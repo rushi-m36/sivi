@@ -1,3 +1,12 @@
+export interface IYouTubeComment {
+  id: string;
+  author: string;
+  authorProfileImage: string;
+  text: string;
+  publishedAt: string;
+  likeCount: string;
+}
+
 export interface IYouTubeVideo {
   id: string;
   title: string;
@@ -9,6 +18,8 @@ export interface IYouTubeVideo {
   duration?: string;
   viewCount?: string;
   likeCount?: string;
+  commentCount?: string;
+  comments?: IYouTubeComment[];
 }
 
 export interface ISearchResult {

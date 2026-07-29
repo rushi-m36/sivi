@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
-import { IYouTubeVideo, ISearchResult } from '../interfaces/video.interface';
+import {
+  IYouTubeVideo,
+  ISearchResult,
+  IYouTubeComment,
+} from '../interfaces/video.interface';
 
 @Injectable()
 export class YoutubeService {
@@ -138,6 +142,8 @@ export class YoutubeService {
         duration: item.contentDetails?.duration,
         viewCount: item.statistics?.viewCount,
         likeCount: item.statistics?.likeCount,
+        commentCount: item.statistics?.commentCount,
+        comments: await this.getVideoComments(id),
       };
     } catch (error: any) {
       this.logger.error(
@@ -149,6 +155,38 @@ export class YoutubeService {
         error?.message ||
         String(error);
       throw new InternalServerErrorException(`YouTube API Error: ${details}`);
+    }
+  }
+
+  async getVideoComments(videoId: string): Promise<IYouTubeComment[]> {
+    try {
+      const commentsResponse = await this.youtube.commentThreads.list({
+        part: ['snippet'],
+        videoId,
+        maxResults: 20,
+      });
+
+      return (
+        commentsResponse.data.items?.map((item) => {
+          const comment = item.snippet?.topLevelComment?.snippet;
+
+          return {
+            id: item.id ?? '',
+            authorDisplayName: comment?.authorDisplayName ?? '',
+            authorProfileImageUrl: comment?.authorProfileImageUrl ?? '',
+            textDisplay: comment?.textDisplay ?? '',
+            publishedAt: comment?.publishedAt ?? '',
+            likeCount: comment?.likeCount ?? 0,
+          };
+        }) ?? []
+      );
+    } catch (error: any) {
+      this.logger.error(
+        `Error fetching comments for video ${videoId}: ${error.message}`,
+        error.stack,
+      );
+
+      return [];
     }
   }
 }

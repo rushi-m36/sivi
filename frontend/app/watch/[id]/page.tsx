@@ -1,5 +1,6 @@
-import React from 'react';
-import { formatViewCount, formatPublishedAt } from '../../../lib/youtube';
+import React from "react";
+import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
+import CommentCard from "@/components/video/CommentCard";
 
 interface WatchPageProps {
   params: Promise<{
@@ -9,13 +10,13 @@ interface WatchPageProps {
 
 export default async function WatchPage({ params }: WatchPageProps) {
   const { id } = await params;
-  
+
   let videoData = null;
   let errorMsg = null;
-  
+
   try {
     const res = await fetch(`http://localhost:3001/api/youtube/video/${id}`, {
-      next: { revalidate: 60 } // optional: cache for 60 seconds
+      next: { revalidate: 60 }, // optional: cache for 60 seconds
     });
     if (res.ok) {
       videoData = await res.json();
@@ -27,8 +28,12 @@ export default async function WatchPage({ params }: WatchPageProps) {
     errorMsg = "Connection error to server";
   }
 
-  const views = videoData?.viewCount ? formatViewCount(videoData.viewCount) : '0 views';
-  const published = videoData?.publishedAt ? formatPublishedAt(videoData.publishedAt) : '';
+  const views = videoData?.viewCount
+    ? formatViewCount(videoData.viewCount)
+    : "0 views";
+  const published = videoData?.publishedAt
+    ? formatPublishedAt(videoData.publishedAt)
+    : "";
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -45,16 +50,20 @@ export default async function WatchPage({ params }: WatchPageProps) {
             ></iframe>
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white" dangerouslySetInnerHTML={{ __html: videoData?.title || 'Watch Video' }}>
-            </h1>
+            <h1
+              className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white"
+              dangerouslySetInnerHTML={{
+                __html: videoData?.title || "Watch Video",
+              }}
+            ></h1>
             <div className="flex flex-wrap items-center justify-between gap-4 mt-2 py-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-white uppercase">
-                  {(videoData?.channelTitle || 'C').charAt(0)}
+                  {(videoData?.channelTitle || "C").charAt(0)}
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
-                    {videoData?.channelTitle || 'Channel Title'}
+                    {videoData?.channelTitle || "Channel Title"}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     YouTube Creator
@@ -62,29 +71,55 @@ export default async function WatchPage({ params }: WatchPageProps) {
                 </div>
               </div>
             </div>
-            
+
             {errorMsg && (
               <div className="mt-4 p-4 rounded-xl bg-red-50 text-red-600 text-sm dark:bg-red-950/20 dark:text-red-400">
                 {errorMsg}
               </div>
             )}
-            
+
             <div className="mt-4 p-4 rounded-xl bg-slate-100 dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200">
               <div className="font-semibold mb-2">
                 {views} {published && `• ${published}`}
               </div>
               <p className="whitespace-pre-line leading-relaxed break-words">
-                {videoData?.description || 'No description available.'}
+                {videoData?.description || "No description available."}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Comments */}
         <div className="space-y-4">
-          <div className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 text-center text-slate-500">
-            Sidebar (Recommendations, comments, etc., are excluded from the MVP scope)
-          </div>
+          <h2 className="text-lg font-semibold">
+            {videoData?.commentCount ?? 0} Comments
+          </h2>
+
+          {videoData?.comments?.length ? (
+            videoData.comments.map(
+              (comment: {
+                id: React.Key | null | undefined;
+                authorDisplayName: string;
+                authorProfileImageUrl: string;
+                textDisplay: string;
+                publishedAt: string;
+                likeCount: number;
+              }) => (
+                <CommentCard
+                  key={comment.id}
+                  author={comment.authorDisplayName}
+                  authorAvatar={comment.authorProfileImageUrl}
+                  text={comment.textDisplay}
+                  publishedAt={comment.publishedAt}
+                  likeCount={comment.likeCount}
+                />
+              )
+            )
+          ) : (
+            <div className="rounded-xl border border-dashed border-slate-300 py-8 text-center text-slate-500 dark:border-zinc-800 dark:text-zinc-400">
+              No comments available.
+            </div>
+          )}
         </div>
       </div>
     </div>
