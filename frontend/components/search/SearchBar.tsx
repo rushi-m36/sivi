@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 export default function SearchBar() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-    
+
     // Search handler logic placeholder
-    console.log('Searching for:', query);
+    console.log("Searching for:", query);
   };
 
   return (
@@ -21,7 +21,7 @@ export default function SearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search videos..."
-          className="w-full h-10 rounded-full border border-slate-300 bg-slate-50 px-4 pr-10 text-sm focus:border-red-500 focus:bg-white focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-red-500"
+          className="w-full h-10 rounded-full border border-slate-300 bg-slate-50 px-4 pr-10 text-sm focus:border-red-500 focus:bg-black focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-red-500"
         />
         <button
           type="submit"

@@ -1,6 +1,6 @@
-import React from 'react';
-import SearchBar from '../components/search/SearchBar';
-import VideoGrid from '../components/video/VideoGrid';
+import React from "react";
+import SearchBar from "../components/search/SearchBar";
+import VideoGrid from "../components/video/VideoGrid";
 
 export default function Home() {
   return (
@@ -9,12 +9,14 @@ export default function Home() {
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-black tracking-tight text-red-600">Sivi</span>
+            <span className="text-2xl font-black tracking-tight text-red-600">
+              Sivi
+            </span>
             <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-600 dark:bg-red-950/50 dark:text-red-400">
               MVP
             </span>
           </div>
-          
+
           <div className="flex flex-1 max-w-md mx-8">
             <SearchBar />
           </div>
@@ -35,9 +37,6 @@ export default function Home() {
             Type in the search bar above to fetch videos.
           </p>
         </div>
-
-        {/* Video Grid Placeholder */}
-        <VideoGrid />
       </main>
     </div>
   );
