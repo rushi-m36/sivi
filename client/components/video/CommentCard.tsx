@@ -1,6 +1,7 @@
 "use client";
 
 import { CommentCardProps } from "@/interfaces/commentInterface";
+import { FallbackImage } from "../layout/FallbackImage";
 
 export default function CommentCard({
   author,
@@ -12,12 +13,10 @@ export default function CommentCard({
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-start gap-3">
-        <img
+        <FallbackImage
           src={authorAvatar || "/default-avatar.png"}
           alt={author}
-          onError={(e) => {
-            e.currentTarget.src = "/default-avatar.png";
-          }}
+          fallback="/default-avatar.png"
           className="h-10 w-10 rounded-full"
         />
 

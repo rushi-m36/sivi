@@ -1,6 +1,7 @@
 import React from "react";
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
 import CommentCard from "@/components/video/CommentCard";
+import { FallbackImage } from "@/components/layout/FallbackImage";
 
 interface WatchPageProps {
   params: Promise<{
@@ -58,9 +59,10 @@ export default async function WatchPage({ params }: WatchPageProps) {
             ></h1>
             <div className="flex flex-wrap items-center justify-between gap-4 mt-2 py-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <img
+                <FallbackImage
                   src={videoData?.channelAvatar || "/default-avatar.png"}
                   alt={videoData?.channelTitle || "Channel"}
+                  fallback="/default-avatar.png"
                   className="h-12 w-12 rounded-full object-cover"
                 />
 

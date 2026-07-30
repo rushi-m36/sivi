@@ -1,4 +1,3 @@
-import React from "react";
 import Link from "next/link";
 import { YouTubeVideo } from "../../types";
 import {
@@ -6,6 +5,7 @@ import {
   formatViewCount,
   formatPublishedAt,
 } from "../../lib/youtube";
+import { FallbackImage } from "../layout/FallbackImage";
 
 interface VideoCardProps {
   video: YouTubeVideo;
@@ -20,11 +20,14 @@ export default function VideoCard({ video }: VideoCardProps) {
     <Link href={`/watch/${video.id}`} className="group flex flex-col gap-2">
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+
+        <FallbackImage
           src={video.thumbnailUrl}
+          fallback="/default-thumbnail.png"
           alt={video.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
+
         {duration && (
           <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
             {duration}
