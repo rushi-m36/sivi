@@ -14,7 +14,7 @@ Sivi is a lightweight, responsive YouTube client MVP designed with a scalable, f
 
 ```
 Sivi/
-├── frontend/               # Next.js Frontend Application
+├── client/               # Next.js Frontend Application
 │   ├── app/                # App Router Routes & Pages
 │   │   ├── page.tsx        # Search / Home Page
 │   │   ├── watch/
@@ -36,7 +36,7 @@ Sivi/
 │   ├── public/             # Static assets
 │   └── package.json
 │
-├── backend/                # NestJS Backend Application
+├── server/                # NestJS Backend Application
 │   ├── src/
 │   │   ├── youtube/        # Youtube Feature Module
 │   │   │   ├── controllers/# REST Endpoints
@@ -71,12 +71,12 @@ Sivi/
 1. **Frontend Initialization** (already generated):
 
    ```bash
-   npx -y create-next-app@latest frontend --ts --tailwind --eslint --app --import-alias "@/*" --use-npm --disable-git
+   npx -y create-next-app@latest client --ts --tailwind --eslint --app --import-alias "@/*" --use-npm --disable-git
    ```
 
 2. **Backend Initialization** (already generated):
    ```bash
-   npx -y @nestjs/cli new backend --package-manager npm --skip-git
+   npx -y @nestjs/cli new server --package-manager npm --skip-git
    ```
 
 ### Running Locally
@@ -84,7 +84,7 @@ Sivi/
 #### 1. Running the Backend
 
 ```bash
-cd backend
+cd server
 npm run start:dev
 ```
 
@@ -93,7 +93,7 @@ Runs at: [http://localhost:3001/api](http://localhost:3001/api)
 #### 2. Running the Frontend
 
 ```bash
-cd frontend
+cd client
 npm run dev
 ```
 
