@@ -82,7 +82,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
               <div className="font-semibold mb-2">
                 {views} {published && `• ${published}`}
               </div>
-              <p className="whitespace-pre-line leading-relaxed break-words">
+              <p className="whitespace-pre-line leading-relaxed wrap-break-word">
                 {videoData?.description || "No description available."}
               </p>
             </div>

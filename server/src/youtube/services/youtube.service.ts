@@ -61,6 +61,33 @@ export class YoutubeService {
         });
       }
 
+      const channelIds = Array.from(
+        new Set(
+          items
+            .map((item) => item.snippet?.channelId)
+            .filter((id): id is string => !!id),
+        ),
+      );
+
+      const channelAvatarMap = new Map<string, string>();
+      if (channelIds.length > 0) {
+        const channelResponse = await this.youtube.channels.list({
+          part: ['snippet'],
+          id: channelIds,
+        });
+
+        channelResponse.data.items?.forEach((channel) => {
+          if (channel.id) {
+            channelAvatarMap.set(
+              channel.id,
+              channel.snippet?.thumbnails?.default?.url ||
+                channel.snippet?.thumbnails?.medium?.url ||
+                channel.snippet?.thumbnails?.high?.url ||
+                '/default-avatar.png',
+            );
+          }
+        });
+      }
       const videos: IYouTubeVideo[] = items
         .map((item) => {
           const videoId = item.id?.videoId;
@@ -83,6 +110,9 @@ export class YoutubeService {
             channelId: snippet?.channelId || details?.snippet?.channelId || '',
             channelTitle:
               snippet?.channelTitle || details?.snippet?.channelTitle || '',
+            channelAvatar: channelAvatarMap.get(
+              snippet?.channelId || '/default-avatar.png',
+            ),
             publishedAt:
               snippet?.publishedAt ||
               details?.snippet?.publishedAt ||

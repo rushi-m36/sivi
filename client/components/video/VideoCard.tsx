@@ -31,15 +31,26 @@ export default function VideoCard({ video }: VideoCardProps) {
           </span>
         )}
       </div>
+
       <div className="flex gap-3 px-1">
+        {/* Channel Avatar */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={video.channelAvatar || "/default-avatar.png"}
+          alt={video.channelTitle}
+          className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
+        />
+
         <div className="flex-1">
           <h3
             className="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-zinc-50 group-hover:text-red-600 dark:group-hover:text-red-400"
             dangerouslySetInnerHTML={{ __html: video.title }}
-          ></h3>
+          />
+
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
             {video.channelTitle}
           </p>
+
           <div className="mt-0.5 text-xs text-slate-400 dark:text-zinc-500">
             {views && <span>{views}</span>}
             {views && published && <span className="mx-1.5">•</span>}
