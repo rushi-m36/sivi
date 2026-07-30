@@ -3,7 +3,7 @@
 import { CommentCardProps } from "@/interfaces/commentInterface";
 import { FallbackImage } from "../layout/FallbackImage";
 
-export default function CommentCard({
+export function CommentCard({
   author,
   authorAvatar,
   text,

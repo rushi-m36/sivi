@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import SearchBar from "../search/SearchBar";
+import { SearchBar } from "../search/SearchBar";
 
 interface NavbarProps {
   query?: string;
   onSearch: (query: string) => void;
 }
 
-export default function Navbar({ query = "", onSearch }: NavbarProps) {
+export function Navbar({ query = "", onSearch }: NavbarProps) {
   const router = useRouter();
 
   return (

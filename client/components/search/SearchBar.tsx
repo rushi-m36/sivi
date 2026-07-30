@@ -7,10 +7,7 @@ interface SearchBarProps {
   initialValue?: string;
 }
 
-export default function SearchBar({
-  onSearch,
-  initialValue = "",
-}: SearchBarProps) {
+export function SearchBar({ onSearch, initialValue = "" }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue);
 
   const handleSearch = (e: React.FormEvent) => {

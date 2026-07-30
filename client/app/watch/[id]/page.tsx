@@ -1,6 +1,6 @@
 import React from "react";
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
-import CommentCard from "@/components/video/CommentCard";
+import { CommentCard } from "@/components/video/CommentCard";
 import { FallbackImage } from "@/components/layout/FallbackImage";
 
 interface WatchPageProps {

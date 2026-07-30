@@ -11,7 +11,7 @@ interface VideoCardProps {
   video: YouTubeVideo;
 }
 
-export default function VideoCard({ video }: VideoCardProps) {
+export function VideoCard({ video }: VideoCardProps) {
   const duration = video.duration ? formatVideoDuration(video.duration) : "";
   const views = video.viewCount ? formatViewCount(video.viewCount) : "";
   const published = formatPublishedAt(video.publishedAt);
