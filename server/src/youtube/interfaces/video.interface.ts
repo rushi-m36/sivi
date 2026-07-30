@@ -14,6 +14,8 @@ export interface IYouTubeVideo {
   thumbnailUrl: string;
   channelId: string;
   channelTitle: string;
+  channelAvatar?: string;
+  subscriberCount?: string;
   publishedAt: string;
   duration?: string;
   viewCount?: string;

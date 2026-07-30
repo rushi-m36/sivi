@@ -157,6 +157,14 @@ export class YoutubeService {
         throw new NotFoundException(`Video with ID ${id} not found`);
       }
 
+      // Fetch channel details
+      const channelResponse = await this.youtube.channels.list({
+        part: ['snippet', 'statistics'],
+        id: [item.snippet?.channelId || ''],
+      });
+
+      const channel = channelResponse.data.items?.[0];
+
       return {
         id,
         title: item.snippet?.title || '',
@@ -166,13 +174,22 @@ export class YoutubeService {
           item.snippet?.thumbnails?.medium?.url ||
           item.snippet?.thumbnails?.default?.url ||
           '',
+
         channelId: item.snippet?.channelId || '',
-        channelTitle: item.snippet?.channelTitle || '',
+        channelTitle:
+          channel?.snippet?.title || item.snippet?.channelTitle || '',
+        channelAvatar:
+          channel?.snippet?.thumbnails?.high?.url ||
+          channel?.snippet?.thumbnails?.medium?.url ||
+          channel?.snippet?.thumbnails?.default?.url ||
+          '/default-avatar.png',
+        subscriberCount: channel?.statistics?.subscriberCount,
         publishedAt: item.snippet?.publishedAt || new Date().toISOString(),
         duration: item.contentDetails?.duration,
         viewCount: item.statistics?.viewCount,
         likeCount: item.statistics?.likeCount,
         commentCount: item.statistics?.commentCount,
+
         comments: await this.getVideoComments(id),
       };
     } catch (error: any) {
@@ -180,10 +197,12 @@ export class YoutubeService {
         `Error fetching YouTube video details: ${error?.message || error}`,
         error?.stack,
       );
+
       const details =
         error?.response?.data?.error?.message ||
         error?.message ||
         String(error);
+
       throw new InternalServerErrorException(`YouTube API Error: ${details}`);
     }
   }

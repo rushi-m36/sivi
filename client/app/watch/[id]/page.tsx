@@ -57,16 +57,24 @@ export default async function WatchPage({ params }: WatchPageProps) {
               }}
             ></h1>
             <div className="flex flex-wrap items-center justify-between gap-4 mt-2 py-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-white uppercase">
-                  {(videoData?.channelTitle || "C").charAt(0)}
-                </div>
+              <div className="flex items-center gap-3">
+                <img
+                  src={videoData?.channelAvatar || "/default-avatar.png"}
+                  alt={videoData?.channelTitle || "Channel"}
+                  className="h-12 w-12 rounded-full object-cover"
+                />
+
                 <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
-                    {videoData?.channelTitle || "Channel Title"}
+                  <h3 className="font-semibold text-slate-900 dark:text-white">
+                    {videoData?.channelTitle || "Channel"}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    YouTube Creator
+
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {videoData?.subscriberCount
+                      ? `${Number(
+                          videoData.subscriberCount
+                        ).toLocaleString()} subscribers`
+                      : "No subscriber data"}
                   </p>
                 </div>
               </div>

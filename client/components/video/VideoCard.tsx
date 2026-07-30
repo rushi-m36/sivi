@@ -38,7 +38,7 @@ export default function VideoCard({ video }: VideoCardProps) {
         <img
           src={video.channelAvatar || "/default-avatar.png"}
           alt={video.channelTitle}
-          className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
+          className="h-9 w-9 shrink-0 rounded-full object-cover"
         />
 
         <div className="flex-1">
