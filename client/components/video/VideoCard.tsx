@@ -38,6 +38,10 @@ export default function VideoCard({ video }: VideoCardProps) {
         <img
           src={video.channelAvatar || "/default-avatar.png"}
           alt={video.channelTitle}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/default-avatar.png";
+          }}
           className="h-9 w-9 shrink-0 rounded-full object-cover"
         />
 

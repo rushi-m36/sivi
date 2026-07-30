@@ -93,7 +93,7 @@ export default function SearchPage() {
           <VideoGrid videos={videos} />
         ) : (
           <div className="flex h-64 items-center justify-center text-lg text-slate-500 dark:text-zinc-400">
-            Search only what you came here for.
+            Videos not found for "{query}"
           </div>
         )}
       </main>
