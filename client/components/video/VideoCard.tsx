@@ -1,15 +1,19 @@
-import React from 'react';
-import Link from 'next/link';
-import { YouTubeVideo } from '../../types';
-import { formatVideoDuration, formatViewCount, formatPublishedAt } from '../../lib/youtube';
+import React from "react";
+import Link from "next/link";
+import { YouTubeVideo } from "../../types";
+import {
+  formatVideoDuration,
+  formatViewCount,
+  formatPublishedAt,
+} from "../../lib/youtube";
 
 interface VideoCardProps {
   video: YouTubeVideo;
 }
 
 export default function VideoCard({ video }: VideoCardProps) {
-  const duration = video.duration ? formatVideoDuration(video.duration) : '';
-  const views = video.viewCount ? formatViewCount(video.viewCount) : '';
+  const duration = video.duration ? formatVideoDuration(video.duration) : "";
+  const views = video.viewCount ? formatViewCount(video.viewCount) : "";
   const published = formatPublishedAt(video.publishedAt);
 
   return (
@@ -29,8 +33,10 @@ export default function VideoCard({ video }: VideoCardProps) {
       </div>
       <div className="flex gap-3 px-1">
         <div className="flex-1">
-          <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-zinc-50 group-hover:text-red-600 dark:group-hover:text-red-400" dangerouslySetInnerHTML={{ __html: video.title }}>
-          </h3>
+          <h3
+            className="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-zinc-50 group-hover:text-red-600 dark:group-hover:text-red-400"
+            dangerouslySetInnerHTML={{ __html: video.title }}
+          ></h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
             {video.channelTitle}
           </p>

@@ -13,8 +13,11 @@ export default function CommentCard({
     <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-start gap-3">
         <img
-          src={authorAvatar}
+          src={authorAvatar || "/default-avatar.png"}
           alt={author}
+          onError={(e) => {
+            e.currentTarget.src = "/default-avatar.png";
+          }}
           className="h-10 w-10 rounded-full"
         />
 
@@ -26,7 +29,7 @@ export default function CommentCard({
             </span>
           </div>
 
-          <p 
+          <p
             className="mt-2 whitespace-pre-wrap text-sm text-slate-700 dark:text-zinc-300"
             dangerouslySetInnerHTML={{ __html: text }}
           />
