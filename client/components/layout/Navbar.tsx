@@ -27,10 +27,16 @@ export function Navbar({ query = "", onSearch }: NavbarProps) {
           <SearchBar onSearch={onSearch} initialValue={query} />
         </div>
 
-        {/* Donate */}
-        <button className="rounded-lg border border-black bg-black px-5 py-2 text-sm font-medium text-white transition hover:bg-white hover:text-black dark:border-white dark:bg-white dark:text-black dark:hover:bg-black dark:hover:text-white">
-          Donate
-        </button>
+        {/* Date */}
+        <div className="text-sm font-medium text-white">
+          {new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
       </div>
     </header>
   );

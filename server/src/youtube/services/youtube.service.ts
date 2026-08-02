@@ -30,10 +30,6 @@ export class YoutubeService {
     pageToken?: string,
     maxResults = 10,
   ): Promise<ISearchResult> {
-    this.logger.log(
-      `Searching videos for query: "${query}" (limit: ${maxResults})`,
-    );
-
     try {
       const searchResponse = await this.youtube.search.list({
         part: ['snippet'],
@@ -144,8 +140,6 @@ export class YoutubeService {
   }
 
   async getVideoDetails(id: string): Promise<IYouTubeVideo> {
-    this.logger.log(`Fetching details for video: ${id}`);
-
     try {
       const response = await this.youtube.videos.list({
         part: ['snippet', 'contentDetails', 'statistics'],
