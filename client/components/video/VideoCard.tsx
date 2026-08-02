@@ -38,13 +38,10 @@ export function VideoCard({ video }: VideoCardProps) {
       <div className="flex gap-3 px-1">
         {/* Channel Avatar */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <FallbackImage
           src={video.channelAvatar || "/default-avatar.png"}
           alt={video.channelTitle}
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "/default-avatar.png";
-          }}
+          fallback="/default-thumbnail.png"
           className="h-9 w-9 shrink-0 rounded-full object-cover"
         />
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
 import { CommentCard } from "@/components/video/CommentCard";
-import { FallbackImage } from "@/components/layout/FallbackImage";
+import { ChannelCard } from "@/components/video/ChannelCard";
 
 interface WatchPageProps {
   params: Promise<{
@@ -57,30 +57,16 @@ export default async function WatchPage({ params }: WatchPageProps) {
                 __html: videoData?.title || "Watch Video",
               }}
             ></h1>
-            <div className="flex flex-wrap items-center justify-between gap-4 mt-2 py-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <FallbackImage
-                  src={videoData?.channelAvatar || "/default-avatar.png"}
-                  alt={videoData?.channelTitle || "Channel"}
-                  fallback="/default-avatar.png"
-                  className="h-12 w-12 rounded-full object-cover"
-                />
 
-                <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white">
-                    {videoData?.channelTitle || "Channel"}
-                  </h3>
-
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    {videoData?.subscriberCount
-                      ? `${Number(
-                          videoData.subscriberCount
-                        ).toLocaleString()} subscribers`
-                      : "No subscriber data"}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <ChannelCard
+              channelTitle={videoData?.channelTitle || "Channel"}
+              channelAvatar={videoData?.channelAvatar}
+              subscriberCount={videoData?.subscriberCount}
+              isSubscribed={false} // Replace with actual subscription state
+              onSubscribe={() => {
+                // Handle subscribe action
+              }}
+            />
 
             {errorMsg && (
               <div className="mt-4 p-4 rounded-xl bg-red-50 text-red-600 text-sm dark:bg-red-950/20 dark:text-red-400">
