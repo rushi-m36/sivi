@@ -1,6 +1,6 @@
 "use client";
 
-import { CommentCardProps } from "@/interfaces/commentInterface";
+import { CommentCardProps } from "@/interfaces/comment.interface";
 import { FallbackImage } from "../layout/FallbackImage";
 
 export function CommentCard({

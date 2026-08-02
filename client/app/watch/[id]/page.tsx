@@ -1,7 +1,9 @@
-import React from "react";
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
 import { CommentCard } from "@/components/video/CommentCard";
 import { ChannelCard } from "@/components/video/ChannelCard";
+import { IVideo } from "../../../interfaces/video.interface";
+import { fetchFromBackend } from "@/lib/api";
+import { IComment } from "@/interfaces/comment.interface";
 
 interface WatchPageProps {
   params: Promise<{
@@ -16,17 +18,12 @@ export default async function WatchPage({ params }: WatchPageProps) {
   let errorMsg = null;
 
   try {
-    const res = await fetch(`http://localhost:3001/api/youtube/video/${id}`, {
-      next: { revalidate: 60 }, // optional: cache for 60 seconds
+    videoData = await fetchFromBackend<IVideo>(`/api/youtube/video/${id}`, {
+      next: { revalidate: 60 },
     });
-    if (res.ok) {
-      videoData = await res.json();
-    } else {
-      errorMsg = `Failed to load video details (Status ${res.status})`;
-    }
   } catch (err: any) {
     console.error("Error fetching video details:", err);
-    errorMsg = "Connection error to server";
+    errorMsg = err.message || "Connection error to server";
   }
 
   const views = videoData?.viewCount
@@ -59,13 +56,9 @@ export default async function WatchPage({ params }: WatchPageProps) {
             ></h1>
 
             <ChannelCard
-              channelTitle={videoData?.channelTitle || "Channel"}
-              channelAvatar={videoData?.channelAvatar}
-              subscriberCount={videoData?.subscriberCount}
-              isSubscribed={false} // Replace with actual subscription state
-              onSubscribe={() => {
-                // Handle subscribe action
-              }}
+              channelTitle={videoData?.channel?.channelTitle || "Channel"}
+              channelAvatar={videoData?.channel?.channelAvatar}
+              subscriberCount={videoData?.channel?.subscriberCount}
             />
 
             {errorMsg && (
@@ -92,25 +85,16 @@ export default async function WatchPage({ params }: WatchPageProps) {
           </h2>
 
           {videoData?.comments?.length ? (
-            videoData.comments.map(
-              (comment: {
-                id: React.Key | null | undefined;
-                authorDisplayName: string;
-                authorProfileImageUrl: string;
-                textDisplay: string;
-                publishedAt: string;
-                likeCount: number;
-              }) => (
-                <CommentCard
-                  key={comment.id}
-                  author={comment.authorDisplayName}
-                  authorAvatar={comment.authorProfileImageUrl}
-                  text={comment.textDisplay}
-                  publishedAt={comment.publishedAt}
-                  likeCount={comment.likeCount}
-                />
-              )
-            )
+            videoData.comments.map((comment: IComment) => (
+              <CommentCard
+                key={comment.id}
+                author={comment.authorDisplayName}
+                authorAvatar={comment.authorProfileImageUrl}
+                text={comment.textDisplay}
+                publishedAt={comment.publishedAt}
+                likeCount={comment.likeCount}
+              />
+            ))
           ) : (
             <div className="rounded-xl border border-dashed border-slate-300 py-8 text-center text-slate-500 dark:border-zinc-800 dark:text-zinc-400">
               No comments available.

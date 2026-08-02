@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { Navbar } from "../../components/search/SearchNavbar";
 import VideoGrid from "../../components/video/VideoGrid";
-import { YouTubeVideo } from "../../interfaces/videoInterface";
+import { IVideo } from "../../interfaces/video.interface";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function SearchPage() {
 
   const query = searchParams.get("q") || "";
 
-  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+  const [videos, setVideos] = useState<IVideo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { YoutubeService } from '../services/youtube.service';
 import { SearchQueryDto } from '../dto/search-query.dto';
-import { ISearchResult, IYouTubeVideo } from '../interfaces/video.interface';
+import { ISearchResult, IVideo } from '../interfaces/video.interface';
 
 @Controller('youtube')
 export class YoutubeController {
@@ -24,7 +24,7 @@ export class YoutubeController {
   }
 
   @Get('video/:id')
-  async getVideoDetails(@Param('id') id: string): Promise<IYouTubeVideo> {
+  async getVideoDetails(@Param('id') id: string): Promise<IVideo> {
     return this.youtubeService.getVideoDetails(id);
   }
 }

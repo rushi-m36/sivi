@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { YouTubeVideo } from "../../interfaces/videoInterface";
+import { YouTubeVideo } from "../../interfaces/video.interface";
 import {
   formatVideoDuration,
   formatViewCount,

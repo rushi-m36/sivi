@@ -1,5 +1,5 @@
 import { FallbackImage } from "@/components/layout/FallbackImage";
-import { ChannelCardProps } from "@/interfaces/channelInterface";
+import { ChannelCardProps } from "@/interfaces/channel.interface";
 import { SubscribeButton } from "./SubscribeButton";
 
 export function ChannelCard({

@@ -3,14 +3,12 @@ import {
   Logger,
   NotFoundException,
   InternalServerErrorException,
+  HttpException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
-import {
-  IYouTubeVideo,
-  ISearchResult,
-  IYouTubeComment,
-} from '../interfaces/video.interface';
+import { IVideo, ISearchResult } from '../interfaces/video.interface';
+import { IComment } from '../interfaces/comment.interface';
 
 @Injectable()
 export class YoutubeService {
@@ -84,7 +82,7 @@ export class YoutubeService {
           }
         });
       }
-      const videos: IYouTubeVideo[] = items
+      const videos: IVideo[] = items
         .map((item) => {
           const videoId = item.id?.videoId;
           if (!videoId) return null;
@@ -118,7 +116,7 @@ export class YoutubeService {
             likeCount: details?.statistics?.likeCount,
           };
         })
-        .filter((video): video is IYouTubeVideo => video !== null);
+        .filter((video): video is IVideo => video !== null);
 
       return {
         videos,
@@ -139,8 +137,9 @@ export class YoutubeService {
     }
   }
 
-  async getVideoDetails(id: string): Promise<IYouTubeVideo> {
+  async getVideoDetails(id: string): Promise<IVideo> {
     try {
+      // 1. Fetch Video Details
       const response = await this.youtube.videos.list({
         part: ['snippet', 'contentDetails', 'statistics'],
         id: [id],
@@ -151,14 +150,30 @@ export class YoutubeService {
         throw new NotFoundException(`Video with ID ${id} not found`);
       }
 
-      // Fetch channel details
-      const channelResponse = await this.youtube.channels.list({
-        part: ['snippet', 'statistics'],
-        id: [item.snippet?.channelId || ''],
-      });
+      const channelId = item.snippet?.channelId;
 
-      const channel = channelResponse.data.items?.[0];
+      // 2. Fetch Channel + Comments Safely in Parallel
+      const [channelResponse, comments] = await Promise.all([
+        // Only fetch channel if channelId is valid (same check as searchVideos)
+        channelId
+          ? this.youtube.channels.list({
+              part: ['snippet', 'statistics'],
+              id: [channelId],
+            })
+          : Promise.resolve(null),
 
+        // Gracefully handle comment errors (disabled comments, etc.)
+        this.getVideoComments(id).catch((err) => {
+          this.logger.warn(
+            `Could not load comments for video ${id}: ${err?.message}`,
+          );
+          return [];
+        }),
+      ]);
+
+      const channel = channelResponse?.data?.items?.[0];
+
+      // 3. Return formatted video object
       return {
         id,
         title: item.snippet?.title || '',
@@ -169,24 +184,31 @@ export class YoutubeService {
           item.snippet?.thumbnails?.default?.url ||
           '',
 
-        channelId: item.snippet?.channelId || '',
-        channelTitle:
-          channel?.snippet?.title || item.snippet?.channelTitle || '',
-        channelAvatar:
-          channel?.snippet?.thumbnails?.high?.url ||
-          channel?.snippet?.thumbnails?.medium?.url ||
-          channel?.snippet?.thumbnails?.default?.url ||
-          '/default-avatar.png',
-        subscriberCount: channel?.statistics?.subscriberCount,
+        channel: {
+          channelId: channelId || '',
+          channelTitle: item.snippet?.channelTitle || '',
+          channelAvatar:
+            channel?.snippet?.thumbnails?.default?.url ||
+            channel?.snippet?.thumbnails?.medium?.url ||
+            channel?.snippet?.thumbnails?.high?.url ||
+            '/default-avatar.png',
+          subscriberCount: channel?.statistics?.subscriberCount,
+        },
+
         publishedAt: item.snippet?.publishedAt || new Date().toISOString(),
         duration: item.contentDetails?.duration,
         viewCount: item.statistics?.viewCount,
         likeCount: item.statistics?.likeCount,
         commentCount: item.statistics?.commentCount,
 
-        comments: await this.getVideoComments(id),
+        comments,
       };
     } catch (error: any) {
+      // Pass NestJS HTTP Exceptions (like 404) through directly
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       this.logger.error(
         `Error fetching YouTube video details: ${error?.message || error}`,
         error?.stack,
@@ -201,7 +223,7 @@ export class YoutubeService {
     }
   }
 
-  async getVideoComments(videoId: string): Promise<IYouTubeComment[]> {
+  async getVideoComments(videoId: string): Promise<IComment[]> {
     try {
       const commentsResponse = await this.youtube.commentThreads.list({
         part: ['snippet'],

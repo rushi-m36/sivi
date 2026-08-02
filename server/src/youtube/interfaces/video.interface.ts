@@ -1,31 +1,22 @@
-export interface IYouTubeComment {
-  id: string;
-  author: string;
-  authorProfileImage: string;
-  text: string;
-  publishedAt: string;
-  likeCount: string;
-}
+import { IChannel } from './channel.interface';
+import { IComment } from './comment.interface';
 
-export interface IYouTubeVideo {
+export interface IVideo {
   id: string;
   title: string;
   description: string;
   thumbnailUrl: string;
-  channelId: string;
-  channelTitle: string;
-  channelAvatar?: string;
-  subscriberCount?: string;
+  channel: IChannel;
+  commentCount?: number;
+  comments?: IComment[];
   publishedAt: string;
   duration?: string;
   viewCount?: string;
   likeCount?: string;
-  commentCount?: string;
-  comments?: IYouTubeComment[];
 }
 
 export interface ISearchResult {
-  videos: IYouTubeVideo[];
+  videos: IVideo[];
   nextPageToken?: string;
   prevPageToken?: string;
   totalResults: number;

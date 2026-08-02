@@ -1,5 +1,5 @@
-import { IComment } from "./commentInterface";
-import { IChannel } from "./channelInterface";
+import { IComment } from "./comment.interface";
+import { IChannel } from "./channel.interface";
 
 export interface IVideo {
   id: string;
