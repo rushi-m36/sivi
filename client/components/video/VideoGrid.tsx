@@ -1,5 +1,5 @@
 import { VideoCard } from "./VideoCard";
-import { YouTubeVideo } from "../../types";
+import { YouTubeVideo } from "../../interfaces/videoInterface";
 
 interface VideoGridProps {
   videos: YouTubeVideo[];

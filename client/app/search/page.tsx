@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { Navbar } from "../../components/search/SearchNavbar";
 import VideoGrid from "../../components/video/VideoGrid";
-import { YouTubeVideo } from "../../types";
+import { YouTubeVideo } from "../../interfaces/videoInterface";
 
 export default function SearchPage() {
   const router = useRouter();

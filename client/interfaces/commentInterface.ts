@@ -1,4 +1,4 @@
-export interface CommentCardProps {
+export interface IComment {
   author: string;
   authorAvatar: string;
   text: string;

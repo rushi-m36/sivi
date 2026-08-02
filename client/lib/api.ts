@@ -1,10 +1,13 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-export async function fetchFromBackend<T>(endpoint: string, options?: RequestInit): Promise<T> {
+export async function fetchFromBackend<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options?.headers,
     },
   });

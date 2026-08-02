@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Sivi is a lightweight, responsive YouTube client MVP designed with a scalable, feature-based architecture.",
   "main": "index.js",
-  "devDependencies": {
-    "concurrently": "^10.0.4"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently -n CLIENT,SERVER -c blue,green \"npm --prefix client run dev\" \"npm --prefix server run start:dev\""
@@ -21,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/rushimangore36-collab/sivi/issues"
   },
-  "homepage": "https://github.com/rushimangore36-collab/sivi#readme"
+  "homepage": "https://github.com/rushimangore36-collab/sivi#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
 }

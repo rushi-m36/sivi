@@ -1,11 +1,14 @@
-export interface YouTubeVideo {
+import { IComment } from "./commentInterface";
+import { IChannel } from "./channelInterface";
+
+export interface IVideo {
   id: string;
   title: string;
   description: string;
   thumbnailUrl: string;
-  channelId: string;
-  channelTitle: string;
-  channelAvatar: string;
+  channel: IChannel;
+  commentCount?: number;
+  comments?: IComment[];
   publishedAt: string;
   duration?: string;
   viewCount?: string;
@@ -13,7 +16,7 @@ export interface YouTubeVideo {
 }
 
 export interface SearchResult {
-  videos: YouTubeVideo[];
+  videos: IVideo[];
   nextPageToken?: string;
   prevPageToken?: string;
   totalResults: number;
