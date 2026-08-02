@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { SearchBar } from "../search/SearchBar";
+import { SearchBar } from "./SearchBar";
 import {
   ClerkProvider,
   Show,

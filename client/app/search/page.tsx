@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Navbar } from "../../components/layout/Navbar";
+import { Navbar } from "../../components/search/SearchNavbar";
 import VideoGrid from "../../components/video/VideoGrid";
 import { YouTubeVideo } from "../../types";
 

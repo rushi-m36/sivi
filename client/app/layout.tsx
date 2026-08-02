@@ -1,7 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Navbar } from "@/components/layout/Navbar";
-
+import HomeNavbar from "@/components/layout/HomeNavbar";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -30,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col  text-black dark:bg-black dark:text-white">
+        <div className="flex justify-center py-4">
+          <HomeNavbar />
+        </div>
         <main className="flex-1">{children}</main>
       </body>
     </html>
