@@ -30,7 +30,7 @@ export default function SearchPage() {
     try {
       const response = await fetch(
         `${
-          process.env.NEXT_PUBLIC_BACKEND_URL
+          process.env.NEXT_PUBLIC_API_URL
         }/youtube/search?q=${encodeURIComponent(searchQuery)}&maxResults=10`
       );
 
