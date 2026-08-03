@@ -1,4 +1,4 @@
-import { IChannel } from './channel.interface';
+import { IChannel } from '../../channel/channel.interface';
 import { IComment } from './comment.interface';
 
 export interface IVideo {

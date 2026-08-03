@@ -56,6 +56,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
             ></h1>
 
             <ChannelCard
+              channelId={videoData?.channel.channelId}
               channelTitle={videoData?.channel?.channelTitle || "Channel"}
               channelAvatar={videoData?.channel?.channelAvatar}
               subscriberCount={videoData?.channel?.subscriberCount}

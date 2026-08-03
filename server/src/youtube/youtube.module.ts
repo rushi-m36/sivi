@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { YoutubeController } from './controllers/youtube.controller';
+import { YoutubeController } from './youtube.controller';
 import { YoutubeService } from './services/youtube.service';
 
 @Module({
