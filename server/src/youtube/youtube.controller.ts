@@ -6,7 +6,7 @@ import {
   ParseIntPipe,
   Query as QueryDecorator,
 } from '@nestjs/common';
-import { YoutubeService } from './services/youtube.service';
+import { YoutubeService } from './youtube.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { ISearchResult, IVideo } from './interfaces/video.interface';
 

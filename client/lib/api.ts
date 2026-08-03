@@ -1,5 +1,5 @@
 const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
 ).replace(/\/$/, "");
 
 // Extend RequestInit to allow Next.js cache and revalidation features
@@ -18,7 +18,6 @@ export async function fetchFromBackend<T>(
     ? endpoint
     : `/${endpoint}`;
   const url = `${API_BASE_URL}${formattedEndpoint}`;
-
   const headers = new Headers(options.headers);
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");

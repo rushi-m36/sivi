@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { YoutubeModule } from './youtube/youtube.module';
+import { ChannelModule } from './channel/channel.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -12,9 +13,9 @@ import configuration from './config/configuration';
       load: [configuration],
     }),
     YoutubeModule,
+    ChannelModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-

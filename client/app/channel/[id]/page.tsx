@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
+import { SubscribeButton } from "@/components/video/SubscribeButton";
 import { fetchFromBackend } from "@/lib/api";
 import { IChannel } from "@/interfaces/channel.interface";
-import { ChannelCard } from "@/components/video/ChannelCard";
 
 interface PageProps {
   params: Promise<{
@@ -9,33 +10,97 @@ interface PageProps {
   }>;
 }
 
+// Helper to format subscriber counts cleanly (e.g., 1.2M, 450K)
+function formatSubscribers(count?: string | number): string {
+  const numericCount = typeof count === "string" ? Number(count) : count;
+
+  if (numericCount == null || Number.isNaN(numericCount)) {
+    return "0 subscribers";
+  }
+
+  return (
+    new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      compactDisplay: "short",
+    }).format(numericCount) + " subscribers"
+  );
+}
+
 export default async function ChannelPage({ params }: PageProps) {
-  // 1. Await the route params (required in Next.js 15+)
   const { id } = await params;
 
   let channel: IChannel;
 
   try {
-    // 2. Fetch data with Next.js caching/revalidation features
-    channel = await fetchFromBackend<IChannel>(`/channels/${id}`, {
+    channel = await fetchFromBackend<IChannel>(`/channel/${id}`, {
       next: {
-        revalidate: 60, // Cache for 60 seconds (ISG)
-        tags: [`channel-${id}`], // Allows tag-based cache invalidation
+        revalidate: 60,
+        tags: [`channel-${id}`],
       },
     });
   } catch (error) {
-    // Render 404 page if API fails or channel isn't found
     notFound();
   }
 
+  const {
+    channelId,
+    channelTitle = "Channel",
+    channelAvatar,
+    subscriberCount,
+  } = channel;
+
   return (
-    <main className="p-6">
-      <ChannelCard
-        channelId={channel.channelId}
-        channelTitle={channel?.channelTitle || "Channel"}
-        channelAvatar={channel?.channelAvatar}
-        subscriberCount={channel?.subscriberCount}
-      />
-    </main>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Header / Channel Info Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div className="flex items-center gap-4 sm:gap-6">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full overflow-hidden bg-muted relative">
+                {channelAvatar ? (
+                  <Image
+                    src={channelAvatar}
+                    alt={channelTitle}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-zinc-700 text-xl font-bold text-white">
+                    {channelTitle.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-1">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                {channelTitle}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {formatSubscribers(subscriberCount)}
+              </p>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <SubscribeButton />
+        </div>
+
+        {/* Videos Section */}
+        <main className="py-8">
+          <h2 className="text-lg font-semibold mb-6">Videos</h2>
+
+          {/* Videos Grid Placeholder */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* Render your <VideoCard /> components here */}
+            <div className="p-12 text-center border rounded-lg border-dashed text-muted-foreground col-span-full">
+              Channel videos will be rendered here.
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }

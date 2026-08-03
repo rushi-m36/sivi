@@ -18,7 +18,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
   let errorMsg = null;
 
   try {
-    videoData = await fetchFromBackend<IVideo>(`/api/youtube/video/${id}`, {
+    videoData = await fetchFromBackend<IVideo>(`/youtube/video/${id}`, {
       next: { revalidate: 60 },
     });
   } catch (err: any) {
