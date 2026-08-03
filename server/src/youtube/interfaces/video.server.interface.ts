@@ -1,12 +1,14 @@
-import { IComment } from "./comment.interface";
-import { IChannel } from "./channel.interface";
+import { IChannel } from '../../channel/channel.server.interface';
+import { IComment } from './comment.server.interface';
 
 export interface IVideo {
   id: string;
   title: string;
   description: string;
   thumbnailUrl: string;
-  channel: IChannel;
+  channelId?: string;
+  channelTitle?: string;
+  channelAvatar?: string;
   commentCount?: number;
   comments?: IComment[];
   publishedAt: string;
@@ -15,7 +17,7 @@ export interface IVideo {
   likeCount?: string;
 }
 
-export interface SearchResult {
+export interface ISearchResult {
   videos: IVideo[];
   nextPageToken?: string;
   prevPageToken?: string;

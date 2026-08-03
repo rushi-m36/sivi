@@ -6,7 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { Navbar } from "../../components/search/SearchNavbar";
 import VideoGrid from "../../components/video/VideoGrid";
-import { IVideo } from "../../interfaces/video.interface";
+import { IVideo } from "../../interfaces/video.client.interface";
+import { fetchFromBackend } from "@/lib/api";
+
+interface YoutubeSearchResponse {
+  videos: IVideo[];
+}
 
 export default function SearchPage() {
   const router = useRouter();
@@ -28,24 +33,10 @@ export default function SearchPage() {
     setError(null);
 
     try {
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL
-        }/youtube/search?q=${encodeURIComponent(searchQuery)}&maxResults=10`
+      const data = await fetchFromBackend<YoutubeSearchResponse>(
+        `/youtube/search?q=${encodeURIComponent(searchQuery)}&maxResults=10`
       );
 
-      if (!response.ok) {
-        let errorMsg = "Failed to fetch videos";
-
-        try {
-          const errData = await response.json();
-          errorMsg = errData.message || errorMsg;
-        } catch {}
-
-        throw new Error(errorMsg);
-      }
-
-      const data = await response.json();
       setVideos(data.videos || []);
     } catch (err: any) {
       console.error(err);

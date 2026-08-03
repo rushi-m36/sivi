@@ -1,8 +1,8 @@
 import { VideoCard } from "./VideoCard";
-import { YouTubeVideo } from "../../interfaces/video.interface";
+import { IVideo } from "../../interfaces/video.client.interface";
 
 interface VideoGridProps {
-  videos: YouTubeVideo[];
+  videos: IVideo[] | undefined;
 }
 
 export default function VideoGrid({ videos }: VideoGridProps) {
@@ -10,7 +10,7 @@ export default function VideoGrid({ videos }: VideoGridProps) {
     return (
       <div className="flex items-center justify-center py-20 text-center">
         <p className="text-lg font-medium text-slate-700 dark:text-zinc-200">
-          Search for what you came here to find.
+          Search Something...
         </p>
       </div>
     );

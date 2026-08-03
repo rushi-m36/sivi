@@ -23,7 +23,7 @@ export async function fetchFromBackend<T>(
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-
+  console.log(`req send to ${url}`);
   const response = await fetch(url, {
     ...options,
     headers,

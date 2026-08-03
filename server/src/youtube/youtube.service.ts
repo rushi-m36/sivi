@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
-import { IVideo, ISearchResult } from '../interfaces/video.interface';
-import { IComment } from '../interfaces/comment.interface';
+import { IComment } from './interfaces/comment.server.interface';
+import { IVideo, ISearchResult } from './interfaces/video.server.interface';
 
 @Injectable()
 export class YoutubeService {
@@ -89,6 +89,8 @@ export class YoutubeService {
 
           const details = videosDetailsMap.get(videoId);
           const snippet = item.snippet;
+          const channelId =
+            snippet?.channelId || details?.snippet?.channelId || '';
 
           return {
             id: videoId,
@@ -101,12 +103,14 @@ export class YoutubeService {
               snippet?.thumbnails?.default?.url ||
               details?.snippet?.thumbnails?.high?.url ||
               '',
-            channelId: snippet?.channelId || details?.snippet?.channelId || '',
-            channelTitle:
-              snippet?.channelTitle || details?.snippet?.channelTitle || '',
-            channelAvatar: channelAvatarMap.get(
-              snippet?.channelId || '/default-avatar.png',
-            ),
+            channel: {
+              channelId,
+              channelTitle:
+                snippet?.channelTitle || details?.snippet?.channelTitle || '',
+              channelAvatar: channelAvatarMap.get(
+                channelId || '/default-avatar.png',
+              ),
+            },
             publishedAt:
               snippet?.publishedAt ||
               details?.snippet?.publishedAt ||

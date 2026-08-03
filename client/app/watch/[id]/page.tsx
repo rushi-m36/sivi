@@ -1,9 +1,9 @@
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
 import { CommentCard } from "@/components/video/CommentCard";
 import { ChannelCard } from "@/components/video/ChannelCard";
-import { IVideo } from "../../../interfaces/video.interface";
+import { IVideo } from "../../../interfaces/video.client.interface";
 import { fetchFromBackend } from "@/lib/api";
-import { IComment } from "@/interfaces/comment.interface";
+import { IComment } from "@/interfaces/comment.client.interface";
 
 interface WatchPageProps {
   params: Promise<{
