@@ -25,6 +25,44 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Clerk-authenticated subscription requests
+
+On the frontend, request a token from Clerk and send it in the Authorization header. Do not send a userId in the body, query string, or custom headers.
+
+```ts
+import { auth } from '@clerk/nextjs/server';
+
+export async function getSubscriptions() {
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  const response = await fetch('http://localhost:3001/api/subscriptions', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.json();
+}
+
+export async function createSubscription(channelId: string) {
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  const response = await fetch('http://localhost:3001/api/subscriptions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ channelId }),
+  });
+
+  return response.json();
+}
+```
+
 ## Project setup
 
 ```bash

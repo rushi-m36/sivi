@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { GetSubscriptionDto } from './dto/get-subscription.dto';
 
 @Injectable()
 export class SubscriptionsService {
@@ -19,18 +18,19 @@ export class SubscriptionsService {
       adapter: new PrismaPg({ connectionString }),
     });
   }
-  async getSubscription(dto: GetSubscriptionDto) {
+
+  async getSubscription(userId: string) {
     return this.prisma.subscription.findMany({
       where: {
-        userId: dto.userId,
+        userId,
       },
     });
   }
 
-  async createSubscription(dto: CreateSubscriptionDto) {
+  async createSubscription(userId: string, dto: CreateSubscriptionDto) {
     return this.prisma.subscription.create({
       data: {
-        userId: dto.userId,
+        userId,
         channelId: dto.channelId,
       },
     });

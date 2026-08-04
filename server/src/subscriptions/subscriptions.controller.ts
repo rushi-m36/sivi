@@ -1,21 +1,24 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { GetSubscriptionDto } from './dto/get-subscription.dto';
 
 @Controller('subscriptions')
+@UseGuards(ClerkAuthGuard)
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
   @Get()
-  async getSubscription(@Headers() getSubscriptionDto: GetSubscriptionDto) {
-    return this.subscriptionsService.getSubscription(getSubscriptionDto);
+  async getSubscription(@CurrentUser() userId: string) {
+    return this.subscriptionsService.getSubscription(userId);
   }
 
   @Post()
   async createSubscription(
-    @Body() createSubscriptionDto: CreateSubscriptionDto,
+    @CurrentUser() userId: string,
+    @Body() dto: CreateSubscriptionDto,
   ) {
-    return this.subscriptionsService.createSubscription(createSubscriptionDto);
+    return this.subscriptionsService.createSubscription(userId, dto);
   }
 }
