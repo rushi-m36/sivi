@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { YoutubeService } from './youtube.service';
 import { SearchQueryDto } from './dto/search-query.dto';
-import { ISearchResult, IVideo } from './interfaces/video.server.interface';
+import { ISearchResult, IVideo } from './types/video.type';
 
 @Controller('youtube')
 export class YoutubeController {

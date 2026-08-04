@@ -1,6 +1,6 @@
-export interface IChannel {
+export type TChannel = {
   channelId: string;
   channelTitle: string;
-  channelAvatar?: string;
+  channelAvatar: string;
   subscriberCount?: number | string;
-}
+};

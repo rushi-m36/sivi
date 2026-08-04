@@ -1,25 +1,23 @@
-import { IChannel } from '../../channel/channel.server.interface';
-import { IComment } from './comment.server.interface';
+import { TChannel } from '@/channel/channel.type';
+import { TComment } from './comment.type';
 
-export interface IVideo {
+export type TVideo = {
   id: string;
   title: string;
   description: string;
   thumbnailUrl: string;
-  channelId?: string;
-  channelTitle?: string;
-  channelAvatar?: string;
+  channel: IChannel;
   commentCount?: number;
   comments?: IComment[];
   publishedAt: string;
   duration?: string;
   viewCount?: string;
   likeCount?: string;
-}
+};
 
-export interface ISearchResult {
-  videos: IVideo[];
+export type TSearchResult = {
+  videos: TVideo[];
   nextPageToken?: string;
   prevPageToken?: string;
   totalResults: number;
-}
+};

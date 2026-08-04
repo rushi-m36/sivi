@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { YoutubeController } from './youtube.controller';
-import { YoutubeService } from './services/youtube.service';
+import { YoutubeService } from './youtube.service';
 
 @Module({
   imports: [ConfigModule],

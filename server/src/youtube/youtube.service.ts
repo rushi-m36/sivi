@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
-import { IComment } from './interfaces/comment.server.interface';
-import { IVideo, ISearchResult } from './interfaces/video.server.interface';
+import { IVideo, ISearchResult } from './types/video.type';
+import { IComment } from './types/comment.type';
 
 @Injectable()
 export class YoutubeService {
@@ -89,8 +89,6 @@ export class YoutubeService {
 
           const details = videosDetailsMap.get(videoId);
           const snippet = item.snippet;
-          const channelId =
-            snippet?.channelId || details?.snippet?.channelId || '';
 
           return {
             id: videoId,
@@ -103,14 +101,12 @@ export class YoutubeService {
               snippet?.thumbnails?.default?.url ||
               details?.snippet?.thumbnails?.high?.url ||
               '',
-            channel: {
-              channelId,
-              channelTitle:
-                snippet?.channelTitle || details?.snippet?.channelTitle || '',
-              channelAvatar: channelAvatarMap.get(
-                channelId || '/default-avatar.png',
-              ),
-            },
+            channelId: snippet?.channelId || details?.snippet?.channelId || '',
+            channelTitle:
+              snippet?.channelTitle || details?.snippet?.channelTitle || '',
+            channelAvatar: channelAvatarMap.get(
+              snippet?.channelId || '/default-avatar.png',
+            ),
             publishedAt:
               snippet?.publishedAt ||
               details?.snippet?.publishedAt ||
@@ -143,7 +139,6 @@ export class YoutubeService {
 
   async getVideoDetails(id: string): Promise<IVideo> {
     try {
-      // 1. Fetch Video Details
       const response = await this.youtube.videos.list({
         part: ['snippet', 'contentDetails', 'statistics'],
         id: [id],
@@ -156,9 +151,7 @@ export class YoutubeService {
 
       const channelId = item.snippet?.channelId;
 
-      // 2. Fetch Channel + Comments Safely in Parallel
       const [channelResponse, comments] = await Promise.all([
-        // Only fetch channel if channelId is valid (same check as searchVideos)
         channelId
           ? this.youtube.channels.list({
               part: ['snippet', 'statistics'],
@@ -166,7 +159,6 @@ export class YoutubeService {
             })
           : Promise.resolve(null),
 
-        // Gracefully handle comment errors (disabled comments, etc.)
         this.getVideoComments(id).catch((err) => {
           this.logger.warn(
             `Could not load comments for video ${id}: ${err?.message}`,
@@ -177,7 +169,6 @@ export class YoutubeService {
 
       const channel = channelResponse?.data?.items?.[0];
 
-      // 3. Return formatted video object
       return {
         id,
         title: item.snippet?.title || '',
