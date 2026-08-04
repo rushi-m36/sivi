@@ -71,7 +71,7 @@ export class ChannelService {
         channel?.snippet?.thumbnails?.medium?.url ||
         channel?.snippet?.thumbnails?.high?.url ||
         '/default-avatar.png',
-
+      subscriberCount: channel?.statistics?.subscriberCount || '',
       videos,
     };
   }

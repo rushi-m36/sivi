@@ -15,16 +15,17 @@ interface PageProps {
 // Helper to format subscriber counts cleanly (e.g., 1.2M, 450K)
 function formatSubscribers(count?: string | number): string {
   const numericCount = typeof count === "string" ? Number(count) : count;
+
   if (numericCount == null || Number.isNaN(numericCount)) {
     return "0 subscribers";
   }
 
-  const n = Math.max(0, Math.floor(Number(numericCount)));
-
-  if (n < 1000) return `${n} subscribers`;
-  if (n < 1_000_000)
-    return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K subscribers`;
-  return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M subscribers`;
+  return (
+    new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      compactDisplay: "short",
+    }).format(numericCount) + " subscribers"
+  );
 }
 
 export default async function ChannelPage({ params }: PageProps) {
@@ -94,7 +95,6 @@ export default async function ChannelPage({ params }: PageProps) {
         <main className="py-8">
           <h2 className="text-lg font-semibold mb-6">Videos</h2>
 
-          {/* Render your <VideoCard /> components here */}
           <VideoGrid videos={videos} />
         </main>
       </div>
