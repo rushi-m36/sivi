@@ -1,9 +1,9 @@
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
 import { CommentCard } from "@/components/video/CommentCard";
 import { ChannelCard } from "@/components/video/ChannelCard";
-import { IVideo } from "../../../interfaces/video.client.interface";
+import { TVideo } from "../../../types/video.type";
 import { fetchFromBackend } from "@/lib/api";
-import { IComment } from "@/interfaces/comment.client.interface";
+import { TComment } from "@/types/comment.type";
 
 interface WatchPageProps {
   params: Promise<{
@@ -18,7 +18,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
   let errorMsg = null;
 
   try {
-    videoData = await fetchFromBackend<IVideo>(`/youtube/video/${id}`, {
+    videoData = await fetchFromBackend<TVideo>(`/youtube/video/${id}`, {
       next: { revalidate: 60 },
     });
   } catch (err: any) {
@@ -86,7 +86,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
           </h2>
 
           {videoData?.comments?.length ? (
-            videoData.comments.map((comment: IComment) => (
+            videoData.comments.map((comment: TComment) => (
               <CommentCard
                 key={comment.id}
                 author={comment.authorDisplayName}

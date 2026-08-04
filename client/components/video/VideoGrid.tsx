@@ -1,8 +1,8 @@
 import { VideoCard } from "./VideoCard";
-import { IVideo } from "../../interfaces/video.client.interface";
+import { TVideo } from "@/types/video.type";
 
 interface VideoGridProps {
-  videos: IVideo[] | undefined;
+  videos: TVideo[] | undefined;
 }
 
 export default function VideoGrid({ videos }: VideoGridProps) {

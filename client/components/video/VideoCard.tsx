@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { IVideo } from "../../interfaces/video.client.interface";
+import { TVideo } from "../../types/video.type";
 import {
   formatVideoDuration,
   formatViewCount,
@@ -8,7 +8,7 @@ import {
 import { FallbackImage } from "../layout/FallbackImage";
 
 interface VideoCardProps {
-  video: IVideo;
+  video: TVideo;
 }
 
 export function VideoCard({ video }: VideoCardProps) {
@@ -39,8 +39,8 @@ export function VideoCard({ video }: VideoCardProps) {
         {/* Channel Avatar */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <FallbackImage
-          src={video.channelAvatar || "/default-avatar.png"}
-          alt={video.channelTitle || "Channel avatar"}
+          src={video.channel.channelAvatar || "/default-avatar.png"}
+          alt={video.channel.channelTitle || "Channel avatar"}
           fallback="/default-thumbnail.png"
           className="h-9 w-9 shrink-0 rounded-full object-cover"
         />
@@ -52,7 +52,7 @@ export function VideoCard({ video }: VideoCardProps) {
           />
 
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-            {video.channelTitle || ""}
+            {video.channel.channelTitle || ""}
           </p>
 
           <div className="mt-0.5 text-xs text-slate-400 dark:text-zinc-500">

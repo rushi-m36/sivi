@@ -1,5 +1,5 @@
 import { FallbackImage } from "@/components/layout/FallbackImage";
-import { IChannel } from "@/interfaces/channel.client.interface";
+import { IChannel } from "@/types/channel.type";
 import { SubscribeButton } from "./SubscribeButton";
 import Link from "next/link";
 

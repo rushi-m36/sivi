@@ -18,10 +18,7 @@ export async function fetchFromBackend<T>(
     ? endpoint
     : `/${endpoint}`;
   const url = `${API_BASE_URL}${formattedEndpoint}`;
-<<<<<<< HEAD
   console.log(`req send to ${url}`);
-=======
->>>>>>> 675e5b24ff449a012d8c973d37c2fc8d22feb0c7
   const headers = new Headers(options.headers);
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");

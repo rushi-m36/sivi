@@ -1,16 +1,15 @@
 "use client";
-/* @jsxImportSource react */
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Navbar } from "../../components/search/SearchNavbar";
 import VideoGrid from "../../components/video/VideoGrid";
-import { IVideo } from "../../interfaces/video.client.interface";
+import { TVideo } from "@/types/video.type";
 import { fetchFromBackend } from "@/lib/api";
 
 interface YoutubeSearchResponse {
-  videos: IVideo[];
+  videos: TVideo[];
 }
 
 export default function SearchPage() {
@@ -19,7 +18,7 @@ export default function SearchPage() {
 
   const query = searchParams.get("q") || "";
 
-  const [videos, setVideos] = useState<IVideo[]>([]);
+  const [videos, setVideos] = useState<TVideo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
