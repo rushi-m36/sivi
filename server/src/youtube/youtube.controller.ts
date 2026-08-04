@@ -8,14 +8,14 @@ import {
 } from '@nestjs/common';
 import { YoutubeService } from './youtube.service';
 import { SearchQueryDto } from './dto/search-query.dto';
-import { ISearchResult, IVideo } from './types/video.type';
+import { TSearchResult, TVideo } from './types/video.type';
 
 @Controller('youtube')
 export class YoutubeController {
   constructor(private readonly youtubeService: YoutubeService) {}
 
   @Get('search')
-  async search(@Query() queryDto: SearchQueryDto): Promise<ISearchResult> {
+  async search(@Query() queryDto: SearchQueryDto): Promise<TSearchResult> {
     return this.youtubeService.searchVideos(
       queryDto.q,
       queryDto.pageToken,
@@ -24,7 +24,7 @@ export class YoutubeController {
   }
 
   @Get('video/:id')
-  async getVideoDetails(@Param('id') id: string): Promise<IVideo> {
+  async getVideoDetails(@Param('id') id: string): Promise<TVideo> {
     return this.youtubeService.getVideoDetails(id);
   }
 }

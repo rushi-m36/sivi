@@ -1,6 +1,6 @@
-export type TChannel = {
-  channelId: string;
-  channelTitle: string;
-  channelAvatar: string;
-  subscriberCount?: number | string;
+import { TVideo } from '@/youtube/types/video.type';
+import { TChannelSummary } from '@/youtube/types/video.type';
+
+export type TChannel = TChannelSummary & {
+  videos?: TVideo[];
 };

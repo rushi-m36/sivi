@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
-import { IVideo, ISearchResult } from './types/video.type';
-import { IComment } from './types/comment.type';
+import { TVideo, TSearchResult } from './types/video.type';
+import { TComment } from './types/comment.type';
 
 @Injectable()
 export class YoutubeService {
@@ -27,7 +27,7 @@ export class YoutubeService {
     query: string,
     pageToken?: string,
     maxResults = 10,
-  ): Promise<ISearchResult> {
+  ): Promise<TSearchResult> {
     try {
       const searchResponse = await this.youtube.search.list({
         part: ['snippet'],
@@ -82,7 +82,7 @@ export class YoutubeService {
           }
         });
       }
-      const videos: IVideo[] = items
+      const videos: TVideo[] = items
         .map((item) => {
           const videoId = item.id?.videoId;
           if (!videoId) return null;
@@ -116,7 +116,7 @@ export class YoutubeService {
             likeCount: details?.statistics?.likeCount,
           };
         })
-        .filter((video): video is IVideo => video !== null);
+        .filter((video): video is TVideo => video !== null);
 
       return {
         videos,
@@ -137,7 +137,7 @@ export class YoutubeService {
     }
   }
 
-  async getVideoDetails(id: string): Promise<IVideo> {
+  async getVideoDetails(id: string): Promise<TVideo> {
     try {
       const response = await this.youtube.videos.list({
         part: ['snippet', 'contentDetails', 'statistics'],
@@ -218,7 +218,7 @@ export class YoutubeService {
     }
   }
 
-  async getVideoComments(videoId: string): Promise<IComment[]> {
+  async getVideoComments(videoId: string): Promise<TComment[]> {
     try {
       const commentsResponse = await this.youtube.commentThreads.list({
         part: ['snippet'],
