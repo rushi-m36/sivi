@@ -4,6 +4,7 @@ export type TChannelSummary = {
   channelId: string;
   channelTitle: string;
   channelAvatar: string;
+  subscriberCount?: string;
 };
 
 export type TVideo = {

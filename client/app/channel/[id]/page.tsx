@@ -1,10 +1,16 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+<<<<<<< HEAD
 import Link from "next/link";
 import { fetchFromBackend } from "@/lib/api";
 import { IChannel } from "@/interfaces/channel.client.interface";
 import VideoGrid from "@/components/video/VideoGrid";
 import { SubscribeButton } from "@/components/video/SubscribeButton";
+=======
+import { SubscribeButton } from "@/components/video/SubscribeButton";
+import { fetchFromBackend } from "@/lib/api";
+import { IChannel } from "@/interfaces/channel.interface";
+>>>>>>> 675e5b24ff449a012d8c973d37c2fc8d22feb0c7
 
 interface PageProps {
   params: Promise<{
@@ -13,13 +19,27 @@ interface PageProps {
 }
 
 // Helper to format subscriber counts cleanly (e.g., 1.2M, 450K)
+<<<<<<< HEAD
 function formatSubscribers(count?: number): string {
   if (!count) return "0 subscribers";
+=======
+function formatSubscribers(count?: string | number): string {
+  const numericCount = typeof count === "string" ? Number(count) : count;
+
+  if (numericCount == null || Number.isNaN(numericCount)) {
+    return "0 subscribers";
+  }
+
+>>>>>>> 675e5b24ff449a012d8c973d37c2fc8d22feb0c7
   return (
     new Intl.NumberFormat("en-US", {
       notation: "compact",
       compactDisplay: "short",
+<<<<<<< HEAD
     }).format(count) + " subscribers"
+=======
+    }).format(numericCount) + " subscribers"
+>>>>>>> 675e5b24ff449a012d8c973d37c2fc8d22feb0c7
   );
 }
 
@@ -44,7 +64,10 @@ export default async function ChannelPage({ params }: PageProps) {
     channelTitle = "Channel",
     channelAvatar,
     subscriberCount,
+<<<<<<< HEAD
     videos,
+=======
+>>>>>>> 675e5b24ff449a012d8c973d37c2fc8d22feb0c7
   } = channel;
 
   return (
@@ -90,7 +113,17 @@ export default async function ChannelPage({ params }: PageProps) {
         <main className="py-8">
           <h2 className="text-lg font-semibold mb-6">Videos</h2>
 
+<<<<<<< HEAD
           <VideoGrid videos={videos} />
+=======
+          {/* Videos Grid Placeholder */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* Render your <VideoCard /> components here */}
+            <div className="p-12 text-center border rounded-lg border-dashed text-muted-foreground col-span-full">
+              Channel videos will be rendered here.
+            </div>
+          </div>
+>>>>>>> 675e5b24ff449a012d8c973d37c2fc8d22feb0c7
         </main>
       </div>
     </div>

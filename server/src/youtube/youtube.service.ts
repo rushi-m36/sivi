@@ -9,7 +9,6 @@ import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
 import { TVideo, TSearchResult } from './types/video.type';
 import { TComment } from './types/comment.type';
-import { channel } from 'node:diagnostics_channel';
 
 @Injectable()
 export class YoutubeService {

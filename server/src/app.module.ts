@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { YoutubeModule } from './youtube/youtube.module';
 import { ChannelModule } from './channel/channel.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -14,6 +15,7 @@ import configuration from './config/configuration';
     }),
     YoutubeModule,
     ChannelModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

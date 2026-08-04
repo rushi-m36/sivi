@@ -1,47 +1,20 @@
+// Prisma schema for the subscriptions service
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider     = "prisma-client-js"
+  moduleFormat = "esm"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-model User {
-
-  id         String   @id @default(cuid())
-
-  clerkId    String   @unique
-
-  email      String   @unique
-
-  imageUrl   String?
-
-  createdAt  DateTime @default(now())
-
-  updatedAt  DateTime @updatedAt
-
-  subscriptions Subscription[]
-}
-
-
-
 model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  channelId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  id         String   @id @default(cuid())
-
-  channelId  String
-
-  channelName String?
-
-  channelImage String?
-
-  createdAt  DateTime @default(now())
-
-  userId     String
-
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, channelId])
+  @@map("subscriptions")
 }
