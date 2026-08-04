@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
 import { TVideo, TSearchResult } from './types/video.type';
 import { TComment } from './types/comment.type';
+import { channel } from 'node:diagnostics_channel';
 
 @Injectable()
 export class YoutubeService {
@@ -101,12 +102,15 @@ export class YoutubeService {
               snippet?.thumbnails?.default?.url ||
               details?.snippet?.thumbnails?.high?.url ||
               '',
-            channelId: snippet?.channelId || details?.snippet?.channelId || '',
-            channelTitle:
-              snippet?.channelTitle || details?.snippet?.channelTitle || '',
-            channelAvatar: channelAvatarMap.get(
-              snippet?.channelId || '/default-avatar.png',
-            ),
+            channel: {
+              channelId:
+                snippet?.channelId || details?.snippet?.channelId || '',
+              channelTitle:
+                snippet?.channelTitle || details?.snippet?.channelTitle || '',
+              channelAvatar: channelAvatarMap.get(
+                snippet?.channelId || '/default-avatar.png',
+              ),
+            },
             publishedAt:
               snippet?.publishedAt ||
               details?.snippet?.publishedAt ||
