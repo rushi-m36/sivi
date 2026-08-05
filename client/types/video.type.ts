@@ -12,7 +12,7 @@ export type TVideo = {
   title: string;
   description: string;
   thumbnailUrl: string;
-  channel: TChannelSummary;
+  channel?: TChannelSummary;
   commentCount?: number;
   comments?: TComment[];
   publishedAt: string;

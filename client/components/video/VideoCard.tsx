@@ -16,6 +16,9 @@ export function VideoCard({ video }: VideoCardProps) {
   const views = video.viewCount ? formatViewCount(video.viewCount) : "";
   const published = formatPublishedAt(video.publishedAt);
 
+  const channelAvatar = video.channel?.channelAvatar || "/default-avatar.png";
+  const channelTitle = video.channel?.channelTitle || "Channel";
+
   return (
     <Link href={`/watch/${video.id}`} className="group flex flex-col gap-2">
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-zinc-800">
@@ -39,8 +42,8 @@ export function VideoCard({ video }: VideoCardProps) {
         {/* Channel Avatar */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <FallbackImage
-          src={video.channel.channelAvatar || "/default-avatar.png"}
-          alt={video.channel.channelTitle || "Channel avatar"}
+          src={channelAvatar}
+          alt={channelTitle}
           fallback="/default-thumbnail.png"
           className="h-9 w-9 shrink-0 rounded-full object-cover"
         />
@@ -52,7 +55,7 @@ export function VideoCard({ video }: VideoCardProps) {
           />
 
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-            {video.channel.channelTitle || ""}
+            {channelTitle}
           </p>
 
           <div className="mt-0.5 text-xs text-slate-400 dark:text-zinc-500">

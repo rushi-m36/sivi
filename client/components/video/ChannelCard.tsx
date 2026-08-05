@@ -9,6 +9,12 @@ export function ChannelCard({
   channelAvatar,
   subscriberCount,
 }: TChannel) {
+  const subscriberText = typeof subscriberCount === "number"
+    ? `${subscriberCount.toLocaleString()} subscribers`
+    : typeof subscriberCount === "string" && subscriberCount.trim() !== ""
+    ? subscriberCount
+    : "No subscriber data";
+
   return (
     <Link href={`/channel/${channelId}`}>
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 py-3 dark:border-slate-800">
@@ -26,9 +32,7 @@ export function ChannelCard({
             </h3>
 
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {subscriberCount
-                ? `${Number(subscriberCount).toLocaleString()} subscribers`
-                : "No subscriber data"}
+              {subscriberText}
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { ChannelCard } from "@/components/video/ChannelCard";
 import { TVideo } from "../../../types/video.type";
 import { fetchFromBackend } from "@/lib/api";
 import { TComment } from "@/types/comment.type";
+import { formatSubscribers } from "../../../lib/youtube";
 
 interface WatchPageProps {
   params: Promise<{
@@ -56,10 +57,12 @@ export default async function WatchPage({ params }: WatchPageProps) {
             ></h1>
 
             <ChannelCard
-              channelId={videoData?.channel.channelId}
+              channelId={videoData?.channel?.channelId}
               channelTitle={videoData?.channel?.channelTitle || "Channel"}
               channelAvatar={videoData?.channel?.channelAvatar}
-              subscriberCount={videoData?.channel?.subscriberCount}
+              subscriberCount={formatSubscribers(
+                videoData?.channel?.subscriberCount
+              )}
             />
 
             {errorMsg && (

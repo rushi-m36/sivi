@@ -9,7 +9,7 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
-import { SearchBar } from "./search/SearchBar";
+import { SearchBar } from "../search/SearchBar";
 
 type Tab = "search" | "subscriptions";
 

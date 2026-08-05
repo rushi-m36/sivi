@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
-
 import { fetchFromBackend } from "@/lib/api";
 import { TChannel } from "@/types/channel.type";
 import VideoGrid from "@/components/video/VideoGrid";
 import { SubscribeButton } from "@/components/video/SubscribeButton";
 import { FallbackImage } from "@/components/layout/FallbackImage";
+import { formatSubscribers } from "@/lib/youtube";
 
 interface PageProps {
   params: Promise<{
@@ -14,20 +13,6 @@ interface PageProps {
 }
 
 // Helper to format subscriber counts cleanly (e.g., 1.2M, 450K)
-function formatSubscribers(count?: string | number): string {
-  const numericCount = typeof count === "string" ? Number(count) : count;
-
-  if (numericCount == null || Number.isNaN(numericCount)) {
-    return "0 subscribers";
-  }
-
-  return (
-    new Intl.NumberFormat("en-US", {
-      notation: "compact",
-      compactDisplay: "short",
-    }).format(numericCount) + " subscribers"
-  );
-}
 
 export default async function ChannelPage({ params }: PageProps) {
   const { id } = await params;

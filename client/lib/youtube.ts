@@ -2,31 +2,31 @@
 
 export function formatVideoDuration(durationStr: string): string {
   // ISO 8601 duration parser placeholder (e.g. PT1H2M10S -> 1:02:10)
-  if (!durationStr) return '00:00';
-  
+  if (!durationStr) return "00:00";
+
   const matches = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!matches) return '00:00';
-  
-  const hours = parseInt(matches[1] || '0', 10);
-  const minutes = parseInt(matches[2] || '0', 10);
-  const seconds = parseInt(matches[3] || '0', 10);
-  
+  if (!matches) return "00:00";
+
+  const hours = parseInt(matches[1] || "0", 10);
+  const minutes = parseInt(matches[2] || "0", 10);
+  const seconds = parseInt(matches[3] || "0", 10);
+
   const parts: string[] = [];
   if (hours > 0) {
     parts.push(hours.toString());
-    parts.push(minutes.toString().padStart(2, '0'));
+    parts.push(minutes.toString().padStart(2, "0"));
   } else {
     parts.push(minutes.toString());
   }
-  parts.push(seconds.toString().padStart(2, '0'));
-  
-  return parts.join(':');
+  parts.push(seconds.toString().padStart(2, "0"));
+
+  return parts.join(":");
 }
 
 export function formatViewCount(countStr: string): string {
   const count = parseInt(countStr, 10);
-  if (isNaN(count)) return '0 views';
-  
+  if (isNaN(count)) return "0 views";
+
   if (count >= 1000000000) {
     return `${(count / 1000000000).toFixed(1)}B views`;
   }
@@ -40,7 +40,7 @@ export function formatViewCount(countStr: string): string {
 }
 
 export function formatPublishedAt(dateStr: string): string {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -50,10 +50,26 @@ export function formatPublishedAt(dateStr: string): string {
   const diffMonths = Math.floor(diffDays / 30);
   const diffYears = Math.floor(diffDays / 365);
 
-  if (diffYears > 0) return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
-  if (diffMonths > 0) return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
-  if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-  if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  if (diffMins > 0) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-  return 'just now';
+  if (diffYears > 0) return `${diffYears} year${diffYears > 1 ? "s" : ""} ago`;
+  if (diffMonths > 0)
+    return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+  if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffMins > 0) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+  return "just now";
+}
+
+export function formatSubscribers(count?: string | number): string {
+  const numericCount = typeof count === "string" ? Number(count) : count;
+
+  if (numericCount == null || Number.isNaN(numericCount)) {
+    return "0 subscribers";
+  }
+
+  return (
+    new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      compactDisplay: "short",
+    }).format(numericCount) + " subscribers"
+  );
 }
