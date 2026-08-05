@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+
 import { fetchFromBackend } from "@/lib/api";
 import { TChannel } from "@/types/channel.type";
 import VideoGrid from "@/components/video/VideoGrid";
 import { SubscribeButton } from "@/components/video/SubscribeButton";
+import { FallbackImage } from "@/components/layout/FallbackImage";
 
 interface PageProps {
   params: Promise<{
@@ -62,10 +63,10 @@ export default async function ChannelPage({ params }: PageProps) {
             <div className="relative shrink-0">
               <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full overflow-hidden bg-muted relative">
                 {channelAvatar ? (
-                  <Image
+                  <FallbackImage
                     src={channelAvatar}
                     alt={channelTitle}
-                    fill
+                    fallback="default-avatar.png"
                     className="object-cover"
                   />
                 ) : (

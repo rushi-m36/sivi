@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import HomeNavbar from "@/components/layout/HomeNavbar";
+import Navbar from "@/components/Navbar";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -31,7 +31,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col  text-black dark:bg-black dark:text-white">
         <div className="flex justify-center py-4">
-          <HomeNavbar />
+          <Navbar />
         </div>
         <main className="flex-1">{children}</main>
       </body>

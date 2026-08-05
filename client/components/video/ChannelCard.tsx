@@ -1,5 +1,5 @@
 import { FallbackImage } from "@/components/layout/FallbackImage";
-import { IChannel } from "@/types/channel.type";
+import { TChannel } from "@/types/channel.type";
 import { SubscribeButton } from "./SubscribeButton";
 import Link from "next/link";
 
@@ -8,7 +8,7 @@ export function ChannelCard({
   channelTitle,
   channelAvatar,
   subscriberCount,
-}: IChannel) {
+}: TChannel) {
   return (
     <Link href={`/channel/${channelId}`}>
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 py-3 dark:border-slate-800">

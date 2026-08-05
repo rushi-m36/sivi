@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Navbar } from "../../components/search/SearchNavbar";
+import Navbar from "@/components/Navbar";
 import VideoGrid from "../../components/video/VideoGrid";
 import { TVideo } from "@/types/video.type";
 import { fetchFromBackend } from "@/lib/api";
@@ -57,8 +57,6 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
-      <Navbar query={query} onSearch={handleSearch} />
-
       <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
         {error && (
           <div className="mb-6 rounded-lg border border-gray-300 bg-gray-100 px-4 py-3 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-white">
