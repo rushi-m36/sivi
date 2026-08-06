@@ -2,12 +2,45 @@ const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
 ).replace(/\/$/, "");
 
-// Extend RequestInit to allow Next.js cache and revalidation features
 export interface FetchOptions extends RequestInit {
   next?: {
     revalidate?: number | false;
     tags?: string[];
   };
+}
+
+declare global {
+  interface Window {
+    Clerk?: {
+      session?: {
+        getToken: () => Promise<string | null>;
+      };
+    };
+  }
+}
+
+/**
+ * Helper to retrieve the Clerk JWT token dynamically
+ * works in both Client Components and Server Components/Actions.
+ */
+async function getClerkToken(): Promise<string | null> {
+  // 1. Server-side environment
+  if (typeof window === "undefined") {
+    try {
+      const { auth } = await import("@clerk/nextjs/server");
+      const { getToken } = await auth();
+      return await getToken();
+    } catch {
+      return null;
+    }
+  }
+
+  // 2. Client-side environment
+  if (window.Clerk?.session) {
+    return await window.Clerk.session.getToken();
+  }
+
+  return null;
 }
 
 export async function fetchFromBackend<T>(
@@ -18,12 +51,21 @@ export async function fetchFromBackend<T>(
     ? endpoint
     : `/${endpoint}`;
   const url = `${API_BASE_URL}${formattedEndpoint}`;
-  console.log(`req send to ${url}`);
+
   const headers = new Headers(options.headers);
+
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  console.log(`req send to ${url}`);
+
+  // Automatically attach the Authorization header if not manually provided
+  if (!headers.has("Authorization")) {
+    const token = await getClerkToken();
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
   const response = await fetch(url, {
     ...options,
     headers,

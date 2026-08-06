@@ -12,8 +12,6 @@ interface PageProps {
   }>;
 }
 
-// Helper to format subscriber counts cleanly (e.g., 1.2M, 450K)
-
 export default async function ChannelPage({ params }: PageProps) {
   const { id } = await params;
 
@@ -74,7 +72,7 @@ export default async function ChannelPage({ params }: PageProps) {
           </div>
 
           {/* Action Button */}
-          <SubscribeButton />
+          <SubscribeButton channelId={channelId} />
         </div>
 
         {/* Videos Section */}

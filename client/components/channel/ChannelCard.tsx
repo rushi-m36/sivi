@@ -9,15 +9,16 @@ export function ChannelCard({
   channelAvatar,
   subscriberCount,
 }: TChannel) {
-  const subscriberText = typeof subscriberCount === "number"
-    ? `${subscriberCount.toLocaleString()} subscribers`
-    : typeof subscriberCount === "string" && subscriberCount.trim() !== ""
-    ? subscriberCount
-    : "No subscriber data";
+  const subscriberText =
+    typeof subscriberCount === "number"
+      ? `${subscriberCount.toLocaleString()} subscribers`
+      : typeof subscriberCount === "string" && subscriberCount.trim() !== ""
+      ? subscriberCount
+      : "No subscriber data";
 
   return (
-    <Link href={`/channel/${channelId}`}>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 py-3 dark:border-slate-800">
+    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 py-3 dark:border-slate-800">
+      <Link href={`/channel/${channelId}`}>
         <div className="flex items-center gap-3">
           <FallbackImage
             src={channelAvatar || "/default-avatar.png"}
@@ -36,9 +37,8 @@ export function ChannelCard({
             </p>
           </div>
         </div>
-
-        <SubscribeButton />
-      </div>
-    </Link>
+      </Link>
+      <SubscribeButton channelId={channelId} />
+    </div>
   );
 }
