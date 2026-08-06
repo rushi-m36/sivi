@@ -5,15 +5,23 @@ import { useEffect, useState } from "react";
 
 interface SubscribeButtonProps {
   channelId: string | undefined;
+  /** Optional initial subscription state (set to true on subscriptions page) */
+  initialIsSubscribed?: boolean;
 }
 
-export function SubscribeButton({ channelId }: SubscribeButtonProps) {
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export function SubscribeButton({
+  channelId,
+  initialIsSubscribed = false,
+}: SubscribeButtonProps) {
+  const [isSubscribed, setIsSubscribed] =
+    useState<boolean>(initialIsSubscribed);
+  const [isLoading, setIsLoading] = useState<boolean>(!initialIsSubscribed);
   const [isPending, setIsPending] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!channelId) {
+    // Skip checking status if initial state was already provided or if channelId is missing
+    if (!channelId || initialIsSubscribed) {
+      setIsSubscribed(initialIsSubscribed);
       setIsLoading(false);
       return;
     }
@@ -30,10 +38,7 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
           setIsSubscribed(Boolean(status));
         }
       } catch (error) {
-        // If unauthenticated or token is missing, default to false without crashing
-        if (isMounted) {
-          setIsSubscribed(false);
-        }
+        console.error("Failed to fetch subscription status:", error);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -46,7 +51,7 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
     return () => {
       isMounted = false;
     };
-  }, [channelId]);
+  }, [channelId, initialIsSubscribed]);
 
   async function handleToggleSubscribe() {
     if (!channelId || isPending) return;
@@ -69,7 +74,6 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
       }
     } catch (error) {
       console.error("Failed to update subscription:", error);
-      // Revert optimistic update if API call fails (e.g., user not logged in)
       setIsSubscribed(previousState);
     } finally {
       setIsPending(false);

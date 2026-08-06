@@ -60,9 +60,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
               channelId={videoData?.channel?.channelId}
               channelTitle={videoData?.channel?.channelTitle || "Channel"}
               channelAvatar={videoData?.channel?.channelAvatar}
-              subscriberCount={formatSubscribers(
-                videoData?.channel?.subscriberCount
-              )}
+              subscriberCount={videoData?.channel?.subscriberCount}
             />
 
             {errorMsg && (

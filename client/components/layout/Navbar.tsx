@@ -1,21 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  ClerkProvider,
-  Show,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
+import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
+
 import { SearchBar } from "../search/SearchBar";
 
-type Tab = "search" | "subscriptions";
+type Tab = {
+  id: string;
+  label: string;
+  href: string;
+};
 
-const tabs: { id: Tab; label: string }[] = [
-  { id: "search", label: "Search" },
-  { id: "subscriptions", label: "Subscriptions" },
+const tabs: Tab[] = [
+  { id: "search", label: "Search", href: "/" },
+  { id: "subscriptions", label: "Subscriptions", href: "/subscriptions" },
 ];
 
 interface NavbarProps {
@@ -25,101 +23,118 @@ interface NavbarProps {
 
 export default function Navbar({ query = "", onSearch }: NavbarProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>("search");
-
-  const handleTab = (tab: Tab) => {
-    setActiveTab(tab);
-
-    if (tab === "search") {
-      router.push("/");
-    } else {
-      router.push("/subscriptions");
-    }
-  };
+  const pathname = usePathname();
 
   const handleSearch = (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
 
     if (onSearch) {
-      onSearch(searchQuery);
+      onSearch(trimmed);
       return;
     }
 
-    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
   };
 
   return (
-    <header className="sticky top-4 z-50 mx-auto w-[96%] max-w-[1700px] rounded-full border border-zinc-300 bg-white/85 shadow-[0_10px_35px_rgba(0,0,0,0.08)] backdrop-blur-2xl dark:border-gray-500 dark:bg-black/85">
-      <div className="flex h-14 items-center gap-8 px-8">
-        {/* Logo */}
+    <header className="sticky top-4 z-50 mx-auto w-[95%] max-w-7xl rounded-full border border-black/10 bg-white/70 p-1.5 shadow-lg backdrop-blur-md transition-all dark:border-white/10 dark:bg-zinc-950/70 dark:shadow-black/40">
+      <div className="flex h-10 items-center justify-between gap-2 px-2 sm:gap-4 sm:px-6">
+        {/* Brand / Logo */}
         <button
           onClick={() => router.push("/")}
-          className="text-3xl font-black tracking-tight text-black transition-opacity hover:opacity-70 dark:text-white"
+          className="shrink-0 text-xl font-black tracking-tight text-zinc-900 transition-opacity hover:opacity-80 active:scale-95 dark:text-white"
         >
           Sivi
         </button>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleTab(tab.id)}
-              className={`relative pb-1 text-[15px] font-medium transition-colors duration-200 ${
-                activeTab === tab.id
-                  ? "text-black dark:text-white"
-                  : "text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white"
-              }`}
-            >
-              {tab.label}
+        {/* Navigation Tabs */}
+        <nav className="hidden shrink-0 items-center gap-1 md:flex">
+          {tabs.map((tab) => {
+            const isActive =
+              tab.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(tab.href);
 
-              <span
-                className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-black transition-all duration-300 dark:bg-white ${
-                  activeTab === tab.id ? "w-full opacity-100" : "w-0 opacity-0"
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => router.push(tab.href)}
+                aria-current={isActive ? "page" : undefined}
+                className={`relative px-3 py-1 text-sm font-medium transition-colors duration-200 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-0 after:bg-zinc-900 after:transition-transform after:duration-200 after:content-[''] dark:after:bg-white ${
+                  isActive
+                    ? "text-zinc-900 after:scale-x-100 dark:text-white"
+                    : "text-zinc-600 hover:text-zinc-900 hover:after:scale-x-100 dark:text-zinc-400 dark:hover:text-white"
                 }`}
-              />
-            </button>
-          ))}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Search */}
-        <div className="min-w-0 flex-1">
+        {/* Search Bar */}
+        <div className="min-w-0 max-w-80 flex-1 sm:max-w-2xl">
           <SearchBar onSearch={handleSearch} initialValue={query} />
         </div>
 
-        {/* Auth */}
-        <ClerkProvider>
+        {/* Authentication Controls */}
+        <div className="flex shrink-0 items-center gap-2">
           <Show when="signed-out">
-            <div className="flex items-center gap-3">
-              <SignInButton>
-                <button className="rounded-full border border-zinc-300 px-5 py-2 text-sm font-medium transition hover:border-black hover:bg-zinc-100 dark:border-zinc-700 dark:text-white dark:hover:border-white dark:hover:bg-zinc-900">
-                  Sign In
-                </button>
-              </SignInButton>
+            <SignInButton mode="modal">
+              <button
+                type="button"
+                className="hidden rounded-full px-3 py-1 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 sm:inline-flex"
+              >
+                Sign In
+              </button>
+            </SignInButton>
 
-              <SignUpButton>
-                <button className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
-                  Sign Up
-                </button>
-              </SignUpButton>
-            </div>
+            <SignUpButton mode="modal">
+              <button
+                type="button"
+                className="rounded-full bg-zinc-900 px-3 py-1 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 active:scale-95 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+              >
+                Sign Up
+              </button>
+            </SignUpButton>
           </Show>
 
           <Show when="signed-in">
-            <div className="rounded-full border border-zinc-300 p-1 transition hover:border-black dark:border-zinc-700 dark:hover:border-white">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "h-9 w-9",
-                  },
-                }}
-              />
-              +
-            </div>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "h-7 w-7",
+                },
+              }}
+            />
           </Show>
-        </ClerkProvider>
+        </div>
       </div>
+
+      {/* Mobile nav tabs */}
+      <nav className="mt-1 flex items-center gap-3 px-4 pb-1 md:hidden">
+        {tabs.map((tab) => {
+          const isActive =
+            tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => router.push(tab.href)}
+              className={`relative px-1 py-0.5 text-xs font-medium after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-center after:transition-transform after:content-[''] ${
+                isActive
+                  ? "text-zinc-900 after:scale-x-100 after:bg-zinc-900 dark:text-white dark:after:bg-white"
+                  : "text-zinc-600 after:scale-x-0 dark:text-zinc-400"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </nav>
     </header>
   );
 }
