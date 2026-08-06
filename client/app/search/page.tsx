@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-import Navbar from "@/components/Navbar";
 import VideoGrid from "../../components/video/VideoGrid";
 import { TVideo } from "@/types/video.type";
 import { fetchFromBackend } from "@/lib/api";

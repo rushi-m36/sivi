@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Param } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { SubscriptionsService } from './subscriptions.service';
@@ -12,6 +12,14 @@ export class SubscriptionsController {
   @Get()
   async getSubscription(@CurrentUser() userId: string) {
     return this.subscriptionsService.getSubscription(userId);
+  }
+
+  @Get('status/:channelId')
+  async checkSubscriptionStatus(
+    @CurrentUser() userId: string,
+    @Param('channelId') channelId: string,
+  ) {
+    return this.subscriptionsService.checkSubscriptionStatus(userId, channelId);
   }
 
   @Post()

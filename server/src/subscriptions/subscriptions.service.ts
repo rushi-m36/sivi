@@ -27,6 +27,20 @@ export class SubscriptionsService {
     });
   }
 
+  async checkSubscriptionStatus(
+    userId: string,
+    channelId: string,
+  ): Promise<boolean> {
+    const status = await this.prisma.subscription.findFirst({
+      where: {
+        userId,
+        channelId,
+      },
+    });
+
+    return !!status;
+  }
+
   async createSubscription(userId: string, dto: CreateSubscriptionDto) {
     return this.prisma.subscription.create({
       data: {

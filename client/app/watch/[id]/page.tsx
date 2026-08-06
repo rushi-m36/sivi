@@ -1,6 +1,6 @@
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
 import { CommentCard } from "@/components/video/CommentCard";
-import { ChannelCard } from "@/components/video/ChannelCard";
+import { ChannelCard } from "@/components/channel/ChannelCard";
 import { TVideo } from "../../../types/video.type";
 import { fetchFromBackend } from "@/lib/api";
 import { TComment } from "@/types/comment.type";

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { fetchFromBackend } from "@/lib/api";
 import { TChannel } from "@/types/channel.type";
 import VideoGrid from "@/components/video/VideoGrid";
-import { SubscribeButton } from "@/components/video/SubscribeButton";
+import { SubscribeButton } from "@/components/channel/SubscribeButton";
 import { FallbackImage } from "@/components/layout/FallbackImage";
 import { formatSubscribers } from "@/lib/youtube";
 
