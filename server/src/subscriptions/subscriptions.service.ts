@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { NotFoundException } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
+import { DeleteSubscriptionDto } from './dto/delete-subscription.dto';
 
 @Injectable()
 export class SubscriptionsService {
@@ -46,6 +48,25 @@ export class SubscriptionsService {
       data: {
         userId,
         channelId: dto.channelId,
+      },
+    });
+  }
+
+  async deleteSubscription(userId: string, dto: DeleteSubscriptionDto) {
+    const subscription = await this.prisma.subscription.findFirst({
+      where: {
+        userId,
+        channelId: dto.channelId,
+      },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    return this.prisma.subscription.delete({
+      where: {
+        id: subscription.id,
       },
     });
   }

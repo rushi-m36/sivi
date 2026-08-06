@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Post, UseGuards, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
+import { DeleteSubscriptionDto } from './dto/delete-subscription.dto';
 
 @Controller('subscriptions')
 @UseGuards(ClerkAuthGuard)
@@ -14,19 +23,27 @@ export class SubscriptionsController {
     return this.subscriptionsService.getSubscription(userId);
   }
 
-  @Get('status/:channelId')
-  async checkSubscriptionStatus(
-    @CurrentUser() userId: string,
-    @Param('channelId') channelId: string,
-  ) {
-    return this.subscriptionsService.checkSubscriptionStatus(userId, channelId);
-  }
-
   @Post()
   async createSubscription(
     @CurrentUser() userId: string,
     @Body() dto: CreateSubscriptionDto,
   ) {
     return this.subscriptionsService.createSubscription(userId, dto);
+  }
+
+  @Delete()
+  async deleteSubscription(
+    @CurrentUser() userId: string,
+    @Body() dto: DeleteSubscriptionDto,
+  ) {
+    return this.subscriptionsService.deleteSubscription(userId, dto);
+  }
+
+  @Get('status/:channelId')
+  async checkSubscriptionStatus(
+    @CurrentUser() userId: string,
+    @Param('channelId') channelId: string,
+  ) {
+    return this.subscriptionsService.checkSubscriptionStatus(userId, channelId);
   }
 }
