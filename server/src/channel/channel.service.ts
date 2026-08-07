@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { google } from 'googleapis';
 import { ConfigService } from '@nestjs/config';
-import { TVideo } from '@/youtube/types/video.type';
+import { TVideo } from '@/videos/types/video.type';
 import { TChannel } from '@/channel/channel.type';
 
 @Injectable()

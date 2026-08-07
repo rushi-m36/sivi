@@ -11,8 +11,8 @@ import { TVideo, TSearchResult } from './types/video.type';
 import { TComment } from './types/comment.type';
 
 @Injectable()
-export class YoutubeService {
-  private readonly logger = new Logger(YoutubeService.name);
+export class VideoService {
+  private readonly logger = new Logger(VideoService.name);
   private readonly youtube;
 
   constructor(private configService: ConfigService) {

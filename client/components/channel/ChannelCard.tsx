@@ -32,7 +32,7 @@ export function ChannelCard({
           </div>
         </div>
       </Link>
-      <SubscribeButton channelId={channelId} initialIsSubscribed={true} />
+      <SubscribeButton channelId={channelId} />
     </div>
   );
 }

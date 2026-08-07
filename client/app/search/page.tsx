@@ -31,7 +31,7 @@ export default function SearchPage() {
 
     try {
       const data = await fetchFromBackend<YoutubeSearchResponse>(
-        `/youtube/search?q=${encodeURIComponent(searchQuery)}&maxResults=10`
+        `/videos/search?q=${encodeURIComponent(searchQuery)}&maxResults=10`
       );
 
       setVideos(data.videos || []);

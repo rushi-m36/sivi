@@ -1,4 +1,4 @@
-import { TVideo } from '@/youtube/types/video.type';
+import { TVideo } from '@/videos/types/video.type';
 
 export type TChannel = {
   channelId: string;

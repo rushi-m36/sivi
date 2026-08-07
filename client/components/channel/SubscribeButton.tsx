@@ -5,23 +5,16 @@ import { useEffect, useState } from "react";
 
 interface SubscribeButtonProps {
   channelId: string | undefined;
-  /** Optional initial subscription state (set to true on subscriptions page) */
-  initialIsSubscribed?: boolean;
 }
 
-export function SubscribeButton({
-  channelId,
-  initialIsSubscribed = false,
-}: SubscribeButtonProps) {
-  const [isSubscribed, setIsSubscribed] =
-    useState<boolean>(initialIsSubscribed);
-  const [isLoading, setIsLoading] = useState<boolean>(!initialIsSubscribed);
+export function SubscribeButton({ channelId }: SubscribeButtonProps) {
+  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(Boolean(channelId));
   const [isPending, setIsPending] = useState<boolean>(false);
 
   useEffect(() => {
-    // Skip checking status if initial state was already provided or if channelId is missing
-    if (!channelId || initialIsSubscribed) {
-      setIsSubscribed(initialIsSubscribed);
+    // If channelId isn't loaded yet, keep loading state in check
+    if (!channelId) {
       setIsLoading(false);
       return;
     }
@@ -51,29 +44,28 @@ export function SubscribeButton({
     return () => {
       isMounted = false;
     };
-  }, [channelId, initialIsSubscribed]);
+  }, [channelId]);
 
   async function handleToggleSubscribe() {
     if (!channelId || isPending) return;
 
     const previousState = isSubscribed;
+
+    // Optimistic UI update
     setIsSubscribed(!previousState);
     setIsPending(true);
 
     try {
-      if (previousState) {
-        await fetchFromBackend("/subscriptions", {
-          method: "DELETE",
-          body: JSON.stringify({ channelId }),
-        });
-      } else {
-        await fetchFromBackend("/subscriptions", {
-          method: "POST",
-          body: JSON.stringify({ channelId }),
-        });
-      }
+      await fetchFromBackend("/subscriptions", {
+        method: previousState ? "DELETE" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ channelId }),
+      });
     } catch (error) {
       console.error("Failed to update subscription:", error);
+      // Revert optimistic update on failure
       setIsSubscribed(previousState);
     } finally {
       setIsPending(false);
@@ -84,7 +76,8 @@ export function SubscribeButton({
     return (
       <button
         disabled
-        className="rounded-full bg-zinc-200 px-6 py-2.5 text-sm font-semibold text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+        aria-busy="true"
+        className="rounded-full bg-zinc-200 px-6 py-2.5 text-sm font-semibold text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500 cursor-not-allowed"
       >
         Loading...
       </button>
@@ -95,7 +88,7 @@ export function SubscribeButton({
     <button
       disabled={!channelId || isPending}
       onClick={handleToggleSubscribe}
-      className={`rounded-full px-6 py-2.5 text-sm font-semibold transition disabled:opacity-50 ${
+      className={`cursor-pointer rounded-full px-6 py-2.5 text-sm font-semibold transition disabled:opacity-50 ${
         isSubscribed
           ? "bg-zinc-200 text-black hover:bg-zinc-300 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
           : "bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"

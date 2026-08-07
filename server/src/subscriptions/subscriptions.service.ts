@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { NotFoundException } from '@nestjs/common';
 import { google } from 'googleapis';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { DeleteSubscriptionDto } from './dto/delete-subscription.dto';
@@ -93,7 +92,7 @@ export class SubscriptionsService {
     });
 
     if (!subscription) {
-      throw new NotFoundException('Subscription not found');
+      return { message: 'Subscription already removed' };
     }
 
     return this.prisma.subscription.delete({
