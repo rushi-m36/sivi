@@ -1,8 +1,34 @@
+import { SignInButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { fetchFromBackend } from "@/lib/api";
 import { ChannelCard } from "@/components/channel/ChannelCard";
 import { TChannel } from "@/types/channel.type";
 
 export default async function SubscriptionsPage() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Subscriptions
+          </h1>
+          <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+            Please sign in to view your subscriptions.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <SignInButton mode="modal">
+              <button className="rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
+                Sign in
+              </button>
+            </SignInButton>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   let channels: TChannel[] = [];
   let error: string | null = null;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { SignInButton, useAuth } from "@clerk/nextjs";
 import { fetchFromBackend } from "@/lib/api";
 import { useEffect, useState } from "react";
 
@@ -8,12 +9,17 @@ interface SubscribeButtonProps {
 }
 
 export function SubscribeButton({ channelId }: SubscribeButtonProps) {
+  const { isSignedIn, isLoaded } = useAuth();
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(Boolean(channelId));
   const [isPending, setIsPending] = useState<boolean>(false);
 
   useEffect(() => {
-    // If channelId isn't loaded yet, keep loading state in check
+    if (!isLoaded || !isSignedIn) {
+      setIsLoading(false);
+      return;
+    }
+
     if (!channelId) {
       setIsLoading(false);
       return;
@@ -44,14 +50,13 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
     return () => {
       isMounted = false;
     };
-  }, [channelId]);
+  }, [channelId, isLoaded, isSignedIn]);
 
   async function handleToggleSubscribe() {
-    if (!channelId || isPending) return;
+    if (!channelId || isPending || !isSignedIn) return;
 
     const previousState = isSubscribed;
 
-    // Optimistic UI update
     setIsSubscribed(!previousState);
     setIsPending(true);
 
@@ -65,11 +70,32 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
       });
     } catch (error) {
       console.error("Failed to update subscription:", error);
-      // Revert optimistic update on failure
       setIsSubscribed(previousState);
     } finally {
       setIsPending(false);
     }
+  }
+
+  if (!isLoaded) {
+    return (
+      <button
+        disabled
+        aria-busy="true"
+        className="cursor-not-allowed rounded-full bg-zinc-200 px-6 py-2.5 text-sm font-semibold text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+      >
+        Loading...
+      </button>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <SignInButton mode="modal">
+        <button className="rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
+          Sign in to subscribe
+        </button>
+      </SignInButton>
+    );
   }
 
   if (isLoading) {
@@ -77,7 +103,7 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
       <button
         disabled
         aria-busy="true"
-        className="rounded-full bg-zinc-200 px-6 py-2.5 text-sm font-semibold text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500 cursor-not-allowed"
+        className="cursor-not-allowed rounded-full bg-zinc-200 px-6 py-2.5 text-sm font-semibold text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
       >
         Loading...
       </button>

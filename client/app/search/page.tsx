@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import VideoGrid from "../../components/video/VideoGrid";
 import { TVideo } from "@/types/video.type";
@@ -10,7 +10,7 @@ interface YoutubeSearchResponse {
   videos: TVideo[];
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -84,5 +84,17 @@ export default function SearchPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white px-4 py-8 text-sm text-slate-500 dark:bg-black dark:text-zinc-400" />
+      }
+    >
+      <SearchPageContent />
+    </Suspense>
   );
 }
