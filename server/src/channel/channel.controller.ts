@@ -20,7 +20,6 @@ export class ChannelController {
 
   @Get(':id')
   async getChannel(@Param('id') id: string): Promise<TChannel> {
-    console.log(`request hit /channel/${id}`);
     return this.ChannelService.getChannel(id);
   }
 }
