@@ -11,30 +11,28 @@ export function CommentCard({
   likeCount,
 }: CommentCardProps) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="border-b border-zinc-800 py-4">
       <div className="flex items-start gap-3">
         <FallbackImage
           src={authorAvatar || "/default-avatar.png"}
           alt={author}
           fallback="/default-avatar.png"
-          className="h-10 w-10 rounded-full"
+          className="h-9 w-9 shrink-0 rounded-full"
         />
 
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold">{author}</h3>
-            <span className="text-xs text-slate-500 dark:text-zinc-500">
-              {publishedAt}
-            </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <h3 className="text-sm font-medium text-white">{author}</h3>
+            <span className="text-xs text-zinc-500">{publishedAt}</span>
           </div>
 
           <p
-            className="mt-2 whitespace-pre-wrap text-sm text-slate-700 dark:text-zinc-300"
+            className="mt-1.5 whitespace-pre-wrap text-sm leading-5 text-zinc-300"
             dangerouslySetInnerHTML={{ __html: text }}
           />
 
-          <div className="mt-3 text-xs text-slate-500 dark:text-zinc-500">
-            👍 {likeCount}
+          <div className="mt-2 text-xs text-zinc-500">
+            {likeCount} {likeCount === 1 ? "like" : "likes"}
           </div>
         </div>
       </div>

@@ -12,7 +12,6 @@ interface YoutubeSearchResponse {
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
-
   const query = searchParams.get("q") || "";
 
   const [videos, setVideos] = useState<TVideo[]>([]);
@@ -47,56 +46,60 @@ function SearchPageContent() {
   }, [query]);
 
   return (
-    <div className="min-h-screen bg-transparent">
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6 rounded-[1.75rem] border border-black/10 bg-white/90 p-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-black/80 sm:p-6">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium text-black dark:text-white">
-                Search results
-              </p>
-              <h1 className="text-xl font-semibold text-slate-900 dark:text-white sm:text-2xl">
-                {query ? `Results for “${query}”` : "Search videos"}
-              </h1>
-            </div>
-            {!loading && !error && (
-              <div className="rounded-full border border-black/10 bg-black/5 px-3 py-1 text-sm text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-zinc-300">
+    <main className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
+      <div className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+        {/* Header */}
+        <header className="mb-6 border-b border-zinc-200 pb-5 dark:border-zinc-800">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Search
+          </p>
+
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="min-w-0 truncate text-xl font-semibold tracking-tight sm:text-2xl">
+              {query ? `Results for “${query}”` : "Search videos"}
+            </h1>
+
+            {!loading && !error && videos.length > 0 && (
+              <span className="shrink-0 text-sm text-zinc-500 dark:text-zinc-400">
                 {videos.length} {videos.length === 1 ? "video" : "videos"}
-              </div>
+              </span>
             )}
           </div>
-        </div>
+        </header>
 
+        {/* Error */}
         {error && (
-          <div className="mb-6 rounded-2xl border border-black/10 bg-black/5 px-4 py-3 text-sm text-black dark:border-white/10 dark:bg-white/10 dark:text-white">
+          <div className="mb-6 border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
             {error}
           </div>
         )}
 
+        {/* Loading */}
         {loading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="animate-pulse rounded-[1.25rem] border border-slate-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                <div className="aspect-video rounded-xl bg-slate-200 dark:bg-zinc-800" />
-                <div className="mt-4 h-4 w-3/4 rounded bg-slate-200 dark:bg-zinc-800" />
-                <div className="mt-2 h-3 w-1/2 rounded bg-slate-200 dark:bg-zinc-800" />
+          <div className="grid grid-cols-1 gap-x-4 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-video w-full bg-zinc-200 dark:bg-zinc-800" />
+
+                <div className="mt-3 h-4 w-4/5 bg-zinc-200 dark:bg-zinc-800" />
+
+                <div className="mt-2 h-3 w-2/5 bg-zinc-200 dark:bg-zinc-800" />
               </div>
             ))}
           </div>
         ) : videos.length > 0 ? (
           <VideoGrid videos={videos} />
         ) : (
-          <div className="flex h-64 items-center justify-center rounded-[1.75rem] border border-dashed border-black/10 bg-white/70 text-center text-lg text-slate-600 shadow-sm dark:border-white/10 dark:bg-black/70 dark:text-zinc-400">
-            {query
-              ? `No results found for “${query}”.`
-              : "Start by searching for a video."}
+          <div className="flex min-h-[280px] items-center justify-center border border-zinc-200 dark:border-zinc-800">
+            <p className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {query
+                ? `No results found for “${query}”.`
+                : "Start by searching for a video."}
+            </p>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
 
@@ -104,7 +107,11 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen px-4 py-8 text-sm text-slate-500 dark:text-zinc-400" />
+        <main className="min-h-screen bg-white dark:bg-black">
+          <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+            <div className="h-6 w-40 animate-pulse bg-zinc-200 dark:bg-zinc-800" />
+          </div>
+        </main>
       }
     >
       <SearchPageContent />

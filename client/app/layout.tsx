@@ -1,4 +1,5 @@
 import React from "react";
+import NextTopLoader from "nextjs-toploader";
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -32,6 +33,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full bg-transparent text-slate-900 transition-colors dark:text-white">
+          <NextTopLoader
+            color="#000"
+            height={3}
+            showSpinner={false}
+            crawl={true}
+            crawlSpeed={200}
+            speed={300}
+          />
           <div className="mx-auto flex w-full max-w-7xl flex-col px-3 pb-6 pt-3 sm:px-4 lg:px-6">
             <div className="mb-4">
               <Navbar />
