@@ -8,7 +8,7 @@ Sivi is a lightweight, distraction-free YouTube client designed for learners and
 - No distracting home feed
 - No Shorts
 - Lightweight and minimal UI
-  many more coming soon...
+  & many more coming soon...
 
 
 ## Tech Stack
