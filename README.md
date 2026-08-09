@@ -1,6 +1,6 @@
 # Sivi - YouTube Client MVP
 
-Sivi is a lightweight, distraction free YouTube client designed for those who want to use YouTube instead of YouTube using them.
+Sivi is a lightweight, distraction free YouTube client designed learners.
 
 ## Tech Stack
 
