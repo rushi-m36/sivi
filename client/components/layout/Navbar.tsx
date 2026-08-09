@@ -13,8 +13,16 @@ type Tab = {
 };
 
 const tabs: Tab[] = [
-  { id: "search", label: "Search", href: "/" },
-  { id: "subscriptions", label: "Subscriptions", href: "/subscriptions" },
+  {
+    id: "search",
+    label: "Search",
+    href: "/",
+  },
+  {
+    id: "subscriptions",
+    label: "Subscriptions",
+    href: "/subscriptions",
+  },
 ];
 
 interface NavbarProps {
@@ -26,7 +34,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSearch = (searchQuery: string) => {
     const trimmed = searchQuery.trim();
@@ -46,13 +54,38 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
 
   const navigate = (href: string) => {
     router.push(href);
-    setIsMobileMenuOpen(false);
+    setIsSidebarOpen(false);
   };
 
   return (
-    <header className="border-b border-zinc-800 bg-black text-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="flex h-14 items-center gap-4">
+    <>
+      {/* Navbar */}
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-zinc-800 bg-black">
+        <div className="mx-auto flex h-14 w-full items-center gap-3 px-3 sm:px-5">
+          {/* Menu button */}
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open navigation"
+            aria-expanded={isSidebarOpen}
+            className="flex h-9 w-9 shrink-0 items-center justify-center text-zinc-400 transition hover:text-white"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.7}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+
+          {/* Logo */}
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -61,154 +94,160 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             Sivi
           </button>
 
-          <nav className="hidden h-full items-center gap-6 md:flex">
-            {tabs.map((tab) => {
-              const active = isActiveTab(tab);
-
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => navigate(tab.href)}
-                  className={`relative flex h-full items-center text-sm font-medium ${
-                    active ? "text-white" : "text-zinc-500 hover:text-zinc-200"
-                  }`}
-                >
-                  {tab.label}
-
-                  {active && (
-                    <span className="absolute inset-x-0 bottom-0 h-px bg-white" />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className="mx-auto hidden w-full max-w-xl md:block">
+          {/* Search */}
+          <div className="min-w-0 flex-1 md:mx-auto md:max-w-xl">
             <SearchBar onSearch={handleSearch} initialValue={query} />
           </div>
+        </div>
+      </header>
 
-          <div className="hidden shrink-0 items-center md:flex">
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button
-                  type="button"
-                  className="px-3 py-2 text-sm font-medium text-zinc-400 hover:text-white"
-                >
-                  Sign in
-                </button>
-              </SignInButton>
+      {/* Backdrop */}
+      {isSidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/60"
+        />
+      )}
 
-              <SignUpButton mode="modal">
-                <button
-                  type="button"
-                  className="ml-1 border border-zinc-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-900"
-                >
-                  Sign up
-                </button>
-              </SignUpButton>
-            </Show>
+      {/* Sidebar */}
+      <aside
+        className={`fixed left-0 top-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-zinc-800 bg-zinc-950 transition-transform duration-200 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Sidebar header */}
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 px-4">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="text-lg font-semibold tracking-tight text-white"
+          >
+            Sivi
+          </button>
 
-            <Show when="signed-in">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "h-8 w-8",
-                  },
-                }}
-              />
-            </Show>
-          </div>
-
-          <div className="ml-auto flex items-center gap-1 md:hidden">
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button
-                  type="button"
-                  className="px-2 py-2 text-sm font-medium text-zinc-300"
-                >
-                  Sign in
-                </button>
-              </SignInButton>
-            </Show>
-
-            <Show when="signed-in">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "h-8 w-8",
-                  },
-                }}
-              />
-            </Show>
-
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              aria-label="Toggle navigation menu"
-              aria-expanded={isMobileMenuOpen}
-              className="flex h-9 w-9 items-center justify-center text-zinc-400 hover:text-white"
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close navigation"
+            className="flex h-9 w-9 items-center justify-center text-zinc-500 transition hover:text-white"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              {isMobileMenuOpen ? (
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="square"
-                    strokeLinejoin="miter"
-                    strokeWidth={1.5}
-                    d="M6 6l12 12M18 6L6 18"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="square"
-                    strokeLinejoin="miter"
-                    strokeWidth={1.5}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              )}
-            </button>
-          </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.7}
+                d="M6 6l12 12M18 6L6 18"
+              />
+            </svg>
+          </button>
         </div>
 
-        <div className="pb-3 md:hidden">
-          <SearchBar onSearch={handleSearch} initialValue={query} />
+        {/* Navigation */}
+        <nav className="flex-1 px-2 py-3">
+          <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-zinc-600">
+            Navigation
+          </p>
+
+          {tabs.map((tab) => {
+            const active = isActiveTab(tab);
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => navigate(tab.href)}
+                className={`mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                  active
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-400 hover:bg-zinc-900/70 hover:text-white"
+                }`}
+              >
+                {tab.id === "search" ? (
+                  <svg
+                    className="h-4 w-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="11" cy="11" r="6.5" strokeWidth="1.7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeWidth="1.7"
+                      d="m16 16 4 4"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="h-4 w-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.7"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                )}
+
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Account */}
+        <div className="border-t border-zinc-800 p-3">
+          <p className="px-2 pb-2 text-xs font-medium uppercase tracking-wider text-zinc-600">
+            Account
+          </p>
+
+          {/* Signed out */}
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button
+                type="button"
+                className="flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+              >
+                Sign in
+              </button>
+            </SignInButton>
+
+            <SignUpButton mode="modal">
+              <button
+                type="button"
+                className="mt-1 flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm text-zinc-400 transition hover:bg-zinc-900 hover:text-white"
+              >
+                Sign up
+              </button>
+            </SignUpButton>
+          </Show>
+
+          {/* Signed in */}
+          <Show when="signed-in">
+            <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-8 w-8",
+                  },
+                }}
+              />
+
+              <span className="text-sm text-zinc-300">Account</span>
+            </div>
+          </Show>
         </div>
-
-        {isMobileMenuOpen && (
-          <nav className="border-t border-zinc-800 py-1 md:hidden">
-            {tabs.map((tab) => {
-              const active = isActiveTab(tab);
-
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => navigate(tab.href)}
-                  className={`block w-full border-l-2 px-3 py-3 text-left text-sm font-medium ${
-                    active
-                      ? "border-white text-white"
-                      : "border-transparent text-zinc-500 hover:text-white"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </nav>
-        )}
-      </div>
-    </header>
+      </aside>
+    </>
   );
 }
