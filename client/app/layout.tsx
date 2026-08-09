@@ -34,12 +34,18 @@ export default function RootLayout({
       >
         <body className="min-h-full bg-transparent text-slate-900 transition-colors dark:text-white">
           <NextTopLoader
-            color="#000"
-            height={3}
-            showSpinner={false}
-            crawl={true}
+            color="hsl(var(--secondary-light))"
+            initialPosition={0.08}
             crawlSpeed={200}
-            speed={300}
+            height={3}
+            crawl
+            showSpinner
+            easing="ease"
+            speed={200}
+            shadow="0 0 10px hsl(var(--secondary)),0 0 5px hsl(var(--secondary-light))"
+            template='<div class="bar" role="bar"><div class="peg"></div></div> 
+  <div class="spinner" style="top: 65px" role="spinner"><div class="spinner-icon"></div></div>'
+            zIndex={999999}
           />
           <div className="mx-auto flex w-full max-w-7xl flex-col px-3 pb-6 pt-3 sm:px-4 lg:px-6">
             <div className="mb-4">

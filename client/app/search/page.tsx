@@ -90,7 +90,7 @@ function SearchPageContent() {
         ) : videos.length > 0 ? (
           <VideoGrid videos={videos} />
         ) : (
-          <div className="flex min-h-[280px] items-center justify-center border border-zinc-200 dark:border-zinc-800">
+          <div className="flex min-h-70 items-center justify-center border border-zinc-200 dark:border-zinc-800">
             <p className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
               {query
                 ? `No results found for “${query}”.`
