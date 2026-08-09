@@ -1,67 +1,128 @@
 # Sivi - YouTube Client
 
-Sivi is a lightweight, distraction free YouTube client designed learners.
+Sivi is a lightweight, distraction-free YouTube client designed for learners and intentional video consumption.
+
+## Features
+
+- Search and watch YouTube videos
+- No distracting home feed
+- No Shorts
+- Lightweight and minimal UI
+  many more coming soon...
+
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui
-- **Backend**: NestJS (REST API)
-- **Authentication**: Clerk
-- **Database**: Neon Postgres
-- **API Integration**: YouTube Data API v3
+- **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** NestJS (REST API)
+- **Authentication:** Clerk
+- **Database:** Neon Postgres
+- **ORM:** Prisma
+- **API Integration:** YouTube Data API v3
+
+## Project Structure
+
+```text
+sivi/
+├── client/                         # Next.js frontend
+│   ├── app/                        # Application routes
+│   │   ├── channel/
+│   │   ├── search/
+│   │   ├── subscriptions/
+│   │   └── watch/
+│   ├── components/                 # Reusable UI components
+│   │   ├── channel/
+│   │   ├── layout/
+│   │   ├── search/
+│   │   └── video/
+│   ├── lib/                        # API helpers and utilities
+│   ├── public/                     # Static assets
+│   └── types/                      # TypeScript types
+│
+├── server/                         # NestJS backend
+│   ├── src/
+│   │   ├── auth/
+│   │   ├── channel/
+│   │   ├── config/
+│   │   ├── subscriptions/
+│   │   └── videos/
+│   ├── prisma/                     # Database schema and migrations
+│   └── test/                       # Backend tests
+│
+└── README.md
+```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18+)
-- npm / yarn / pnpm
+- Node.js 18+
+- npm, yarn, or pnpm
+- YouTube Data API v3 credentials
+- Clerk credentials
+- Neon PostgreSQL database
 
-### Initialization Commands
+### Initialization
 
-1. **Frontend Initialization** (already generated):
+The frontend was initialized with:
 
-   ```bash
-   npx -y create-next-app@latest client --ts --tailwind --eslint --app --import-alias "@/*" --use-npm --disable-git
-   ```
+```bash
+npx -y create-next-app@latest client --ts --tailwind --eslint --app --import-alias "@/*" --use-npm --disable-git
+```
 
-2. **Backend Initialization** (already generated):
-   ```bash
-   npx -y @nestjs/cli new server --package-manager npm --skip-git
-   ```
+The backend was initialized with:
+
+```bash
+npx -y @nestjs/cli new server --package-manager npm --skip-git
+```
 
 ### Running Locally
 
-#### 1. Running the Backend
+#### Backend
 
 ```bash
 cd server
 npm run start:dev
 ```
 
-Runs at: [http://localhost:3001/api]
+Backend:
 
-#### 2. Running the Frontend
+`http://localhost:3001/api`
+
+#### Frontend
 
 ```bash
 cd client
 npm run dev
 ```
 
-Runs at: [http://localhost:3000]
+Frontend:
 
----
+`http://localhost:3000`
 
-## Recommended Dependencies (MVP Only)
+## Dependencies
 
 ### Frontend
 
-- `lucide-react`: Icon library.
-- `clsx` & `tailwind-merge`: Required for shadcn/ui styles helper merging.
-- `@tanstack/react-query`: To cache and fetch API results cleanly.
+- `lucide-react` — Icon library
+- `clsx` — Conditional class names
+- `tailwind-merge` — Tailwind class merging
+- `@tanstack/react-query` — Server-state management and caching
 
 ### Backend
 
-- `@nestjs/config`: Environment variable loading.
-- `class-validator` & `class-transformer`: Runtime query validations.
-- `googleapis`: Official Google SDK (provides YouTube Data API wrappers).
+- `@nestjs/config` — Environment configuration
+- `class-validator` — Request validation
+- `class-transformer` — DTO transformation
+- `googleapis` — YouTube Data API integration
+- `prisma` — Database ORM
+
+## Environment Variables
+
+Create the required environment files in both `client` and `server`.
+
+Refer to the environment variable examples provided with the project and never commit secrets to the repository.
+
+## License
+
+See the `LICENSE` file for licensing terms.
