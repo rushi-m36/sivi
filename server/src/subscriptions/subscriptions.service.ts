@@ -7,7 +7,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { DeleteSubscriptionDto } from './dto/delete-subscription.dto';
 import { RedisService } from '../cache/redis.service';
 
-interface YouTubeChannel {
+export interface YouTubeChannel {
   channelId: string;
   channelTitle: string;
   channelAvatar?: string;
