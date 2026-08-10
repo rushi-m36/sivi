@@ -18,7 +18,7 @@ export class YoutubeController {
   async search(@Query() queryDto: SearchQueryDto): Promise<TSearchResult> {
     return this.videoService.searchVideos(
       queryDto.q,
-      queryDto.pageToken,
+
       queryDto.maxResults ? Number(queryDto.maxResults) : 10,
     );
   }

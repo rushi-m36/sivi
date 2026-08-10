@@ -4,7 +4,7 @@ export type TChannelSummary = {
   channelId: string;
   channelTitle: string;
   channelAvatar: string;
-  subscriberCount?: string;
+  subscriberCount?: string | null;
 };
 
 export type TVideo = {
@@ -16,14 +16,12 @@ export type TVideo = {
   commentCount?: number;
   comments?: TComment[];
   publishedAt: string;
-  duration?: string;
-  viewCount?: string;
-  likeCount?: string;
+  duration?: string | null;
+  viewCount?: string | null;
+  likeCount?: string | null;
 };
 
 export type TSearchResult = {
   videos: TVideo[];
-  nextPageToken?: string;
-  prevPageToken?: string;
   totalResults: number;
 };

@@ -6,7 +6,7 @@ export class RedisService implements OnModuleDestroy {
   private readonly redis: Redis;
 
   constructor() {
-    this.redis = new Redis(process.env.UPSTASH_REDIS_REST_URL!);
+    this.redis = new Redis(process.env.REDIS_URL!);
   }
 
   async get<T>(key: string): Promise<T | null> {
