@@ -6,6 +6,7 @@ import { VideoModule } from './videos/video.module';
 import { ChannelModule } from './channel/channel.module';
 import { AuthModule } from './auth/auth.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { CacheModule } from './cache/cache.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -18,6 +19,7 @@ import configuration from './config/configuration';
     ChannelModule,
     AuthModule,
     SubscriptionsModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],

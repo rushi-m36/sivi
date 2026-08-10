@@ -20,9 +20,11 @@
   },
   "homepage": "https://github.com/rushimangore36-collab/sivi#readme",
   "devDependencies": {
+    "@types/ioredis": "^4.28.10",
     "concurrently": "^10.0.4"
   },
   "dependencies": {
-    "@swc/helpers": "^0.5.23"
+    "@swc/helpers": "^0.5.23",
+    "ioredis": "^6.0.0"
   }
 }
