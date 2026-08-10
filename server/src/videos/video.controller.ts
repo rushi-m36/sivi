@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Param,
-  ParseIntPipe,
-  Query as QueryDecorator,
-} from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { TSearchResult, TVideo } from './types/video.type';
