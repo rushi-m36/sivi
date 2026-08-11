@@ -1,6 +1,6 @@
 "use client";
 
-import { CommentCardProps } from "@/types/comment.type";
+import { TComment } from "@/types/comment.type";
 import { FallbackImage } from "../layout/FallbackImage";
 
 export function CommentCard({
@@ -9,7 +9,7 @@ export function CommentCard({
   text,
   publishedAt,
   likeCount,
-}: CommentCardProps) {
+}: TComment) {
   return (
     <div className="border-b border-zinc-800 py-4">
       <div className="flex items-start gap-3">

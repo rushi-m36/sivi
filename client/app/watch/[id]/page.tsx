@@ -109,9 +109,10 @@ export default async function WatchPage({ params }: WatchPageProps) {
               videoData.comments.map((comment: TComment) => (
                 <CommentCard
                   key={comment.id}
-                  author={comment.authorDisplayName}
-                  authorAvatar={comment.authorProfileImageUrl}
-                  text={comment.textDisplay}
+                  id={comment.id}
+                  author={comment.author}
+                  authorAvatar={comment.authorAvatar}
+                  text={comment.text}
                   publishedAt={comment.publishedAt}
                   likeCount={comment.likeCount}
                 />
