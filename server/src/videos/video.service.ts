@@ -20,7 +20,7 @@ export class VideoService {
     private readonly youtubeService: YoutubeService,
   ) {}
 
-  async searchVideos(query: string, maxResults = 10): Promise<TSearchResult> {
+  async searchVideos(query: string, maxResults): Promise<TSearchResult> {
     try {
       const normalizedQuery = query.trim().toLowerCase();
 
@@ -261,7 +261,7 @@ export class VideoService {
 
       const commentsResponse = await this.youtubeService.getComments(
         videoId,
-        20,
+        10,
       );
 
       const comments: TComment[] =

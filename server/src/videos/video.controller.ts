@@ -12,7 +12,7 @@ export class YoutubeController {
     return this.videoService.searchVideos(
       queryDto.q,
 
-      queryDto.maxResults ? Number(queryDto.maxResults) : 10,
+      queryDto.maxResults ? Number(queryDto.maxResults) : 20,
     );
   }
 

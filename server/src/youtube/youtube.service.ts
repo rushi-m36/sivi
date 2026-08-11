@@ -15,7 +15,7 @@ export class YoutubeService {
     });
   }
 
-  async searchVideos(query: string, maxResults = 10) {
+  async searchVideos(query: string, maxResults = 20) {
     return this.youtube.search.list({
       part: ['snippet'],
       q: query,

@@ -14,5 +14,5 @@ export class SearchQueryDto {
   @IsInt()
   @Min(1)
   @Max(50)
-  maxResults: number = 10;
+  maxResults: number = 20;
 }
