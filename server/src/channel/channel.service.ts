@@ -52,11 +52,8 @@ export class ChannelService {
       const cachedChannel = await this.redisService.get<TChannel>(cacheKey);
 
       if (cachedChannel) {
-        this.logger.debug(`Cache HIT: ${cacheKey}`);
         return cachedChannel;
       }
-
-      this.logger.debug(`Cache MISS: ${cacheKey}`);
     } catch (error) {
       // Redis failure should not break the application.
       this.logger.warn(
@@ -148,8 +145,6 @@ export class ChannelService {
     // --------------------------------
     try {
       await this.redisService.set(cacheKey, result, this.CACHE_TTL);
-
-      this.logger.debug(`Cache SET: ${cacheKey} (${this.CACHE_TTL}s)`);
     } catch (error) {
       // Don't fail the request if Redis SET fails.
       this.logger.warn(
