@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
-
+import Link from "next/link";
 import { SearchBar } from "../search/SearchBar";
 
 type Tab = {
@@ -85,13 +85,14 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             </svg>
           </button>
           {/* Logo */}
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="shrink-0 text-lg font-semibold tracking-tight text-white"
-          >
-            Sivi
-          </button>
+          <Link href="/">
+            <button
+              type="button"
+              className="shrink-0 text-lg font-semibold tracking-tight text-white cursor-pointer"
+            >
+              Sivi
+            </button>
+          </Link>
 
           {/* Search */}
           <div className="min-w-0 flex-1 md:mx-auto md:max-w-xl">
@@ -118,13 +119,14 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
       >
         {/* Sidebar header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 px-4">
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="text-lg font-semibold tracking-tight text-white"
-          >
-            Sivi
-          </button>
+          <Link href="/">
+            <button
+              type="button"
+              className="text-lg font-semibold tracking-tight text-white cursor-pointer"
+            >
+              Sivi
+            </button>
+          </Link>
 
           <button
             type="button"
