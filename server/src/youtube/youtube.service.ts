@@ -88,7 +88,7 @@ export class YoutubeService {
 
   async getPlaylistItems(playlistId: string, maxResults) {
     return this.youtube.playlistItems.list({
-      part: ['snippet'],
+      part: ['snippet', 'contentDetails'],
       playlistId,
       maxResults,
     });

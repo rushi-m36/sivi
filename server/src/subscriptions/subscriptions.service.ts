@@ -2,17 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-
+import { TVideo } from '@/videos/types/video.type';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { DeleteSubscriptionDto } from './dto/delete-subscription.dto';
 import { RedisService } from '../cache/redis.service';
 import { YoutubeService } from '../youtube/youtube.service';
+import { youtube_v3 } from 'googleapis';
 
 export interface YouTubeChannel {
+  id: string;
   channelId: string;
   channelTitle: string;
   channelAvatar?: string;
   subscriberCount: number;
+  mostRecentVideo?: {
+    id: string;
+  };
 }
 
 @Injectable()
@@ -38,12 +43,16 @@ export class SubscriptionsService {
     });
   }
 
-  async getSubscription(userId: string): Promise<YouTubeChannel[]> {
+  async getSubscription(userId: string): Promise<{
+    channels: YouTubeChannel[];
+    recentVideos: TVideo[];
+  }> {
     const subscriptionsCacheKey = `subscriptions:user:${userId}`;
 
-    const cachedSubscriptions = await this.getCache<YouTubeChannel[]>(
-      subscriptionsCacheKey,
-    );
+    const cachedSubscriptions = await this.getCache<{
+      channels: YouTubeChannel[];
+      recentVideos: TVideo[];
+    }>(subscriptionsCacheKey);
 
     if (cachedSubscriptions) {
       return cachedSubscriptions;
@@ -57,24 +66,111 @@ export class SubscriptionsService {
     });
 
     if (subscriptions.length === 0) {
-      await this.setCache(subscriptionsCacheKey, [], this.SUBSCRIPTIONS_TTL);
+      const emptyResponse = {
+        channels: [],
+        recentVideos: [],
+      };
 
-      return [];
+      await this.setCache(
+        subscriptionsCacheKey,
+        emptyResponse,
+        this.SUBSCRIPTIONS_TTL,
+      );
+
+      return emptyResponse;
     }
 
     const channelIds = subscriptions.map(
       (subscription) => subscription.channelId,
     );
 
+    // Original subscribed channels
     const channels = await this.getChannelDetails(channelIds);
+
+    // Get latest video ID from each subscribed channel
+    const latestVideoIds = (
+      await Promise.all(
+        channels.map(async (channel) => {
+          const channelData = await this.youtubeService.getChannel(
+            channel.channelId,
+          );
+
+          const uploadsPlaylistId =
+            channelData?.contentDetails?.relatedPlaylists?.uploads;
+
+          if (!uploadsPlaylistId) {
+            return null;
+          }
+
+          const playlistResponse = await this.youtubeService.getPlaylistItems(
+            uploadsPlaylistId,
+            1,
+          );
+
+          return (
+            playlistResponse.data.items?.[0]?.contentDetails?.videoId ?? null
+          );
+        }),
+      )
+    ).filter((videoId): videoId is string => videoId !== null);
+
+    // Get complete video data
+    const videos = (
+      await Promise.all(
+        latestVideoIds.map((videoId) => this.youtubeService.getVideo(videoId)),
+      )
+    ).filter((video): video is youtube_v3.Schema$Video => video !== null);
+
+    const recentVideos: TVideo[] = videos
+      .map((video) => {
+        const channel = channels.find(
+          (channel) => channel.channelId === video.snippet?.channelId,
+        );
+
+        return {
+          id: video.id ?? '',
+          title: video.snippet?.title ?? '',
+          description: video.snippet?.description ?? '',
+
+          thumbnailUrl:
+            video.snippet?.thumbnails?.high?.url ||
+            video.snippet?.thumbnails?.medium?.url ||
+            video.snippet?.thumbnails?.default?.url ||
+            '',
+
+          channel: {
+            channelId: video.snippet?.channelId ?? '',
+            channelTitle: video.snippet?.channelTitle ?? '',
+            channelAvatar: channel?.channelAvatar ?? '',
+            subscriberCount: channel?.subscriberCount ?? null,
+          },
+
+          publishedAt: video.snippet?.publishedAt ?? '',
+          duration: video.contentDetails?.duration ?? null,
+          viewCount: video.statistics?.viewCount ?? null,
+          likeCount: video.statistics?.likeCount ?? null,
+          commentCount: video.statistics?.commentCount
+            ? Number(video.statistics.commentCount)
+            : undefined,
+        };
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+      );
+
+    const response = {
+      channels,
+      recentVideos,
+    };
 
     await this.setCache(
       subscriptionsCacheKey,
-      channels,
+      response,
       this.SUBSCRIPTIONS_TTL,
     );
 
-    return channels;
+    return response;
   }
 
   async checkSubscriptionStatus(
@@ -245,6 +341,7 @@ export class SubscriptionsService {
 
     return (
       response?.data.items?.map((item) => ({
+        id: item.id ?? '',
         channelId: item.id ?? '',
         channelTitle: item.snippet?.title ?? '',
         channelAvatar:
