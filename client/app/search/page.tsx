@@ -29,7 +29,7 @@ function SearchPageContent() {
 
     try {
       const data = await fetchFromBackend<YoutubeSearchResponse>(
-        `/videos/search?q=${encodeURIComponent(searchQuery)}&maxResults=10`
+        `/videos/search?q=${encodeURIComponent(searchQuery)}&maxResults=50`
       );
 
       setVideos(data.videos || []);

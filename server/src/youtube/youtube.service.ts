@@ -64,7 +64,7 @@ export class YoutubeService {
     return response.data.items?.[0] ?? null;
   }
 
-  async getComments(videoId: string, maxResults = 20) {
+  async getComments(videoId: string, maxResults) {
     return this.youtube.commentThreads.list({
       part: ['snippet'],
       videoId,
@@ -86,7 +86,7 @@ export class YoutubeService {
     });
   }
 
-  async getPlaylistItems(playlistId: string, maxResults = 5) {
+  async getPlaylistItems(playlistId: string, maxResults) {
     return this.youtube.playlistItems.list({
       part: ['snippet'],
       playlistId,

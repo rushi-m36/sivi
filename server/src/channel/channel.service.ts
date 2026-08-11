@@ -71,7 +71,7 @@ export class ChannelService {
     if (uploadsPlaylistId) {
       const videosResponse = await this.youtubeService.getPlaylistItems(
         uploadsPlaylistId,
-        5,
+        50,
       );
 
       videos =
