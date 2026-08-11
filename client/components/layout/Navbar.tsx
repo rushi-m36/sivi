@@ -68,7 +68,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             onClick={() => setIsSidebarOpen(true)}
             aria-label="Open navigation"
             aria-expanded={isSidebarOpen}
-            className="flex h-9 w-9 shrink-0 items-center justify-center text-zinc-400 transition hover:text-white"
+            className="flex h-9 w-9 shrink-0 items-center justify-center text-zinc-400 transition hover:text-white cursor-pointer"
           >
             <svg
               className="h-5 w-5"
@@ -132,7 +132,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             type="button"
             onClick={() => setIsSidebarOpen(false)}
             aria-label="Close navigation"
-            className="flex h-9 w-9 items-center justify-center text-zinc-500 transition hover:text-white"
+            className="flex h-9 w-9 items-center justify-center text-zinc-500 transition hover:text-white cursor-pointer"
           >
             <svg
               className="h-5 w-5"
@@ -163,7 +163,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
                 key={tab.id}
                 type="button"
                 onClick={() => navigate(tab.href)}
-                className={`mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                className={`cursor-pointer mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
                   active
                     ? "bg-zinc-900 text-white"
                     : "text-zinc-400 hover:bg-zinc-900/70 hover:text-white"

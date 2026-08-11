@@ -44,7 +44,7 @@ export function SearchBar({ onSearch, initialValue = "" }: SearchBarProps) {
 
         <button
           type="submit"
-          className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center border-l border-zinc-800 text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-white"
+          className="cursor-pointer absolute right-0 top-0 flex h-10 w-10 items-center justify-center border-l border-zinc-800 text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-white"
           aria-label="Search"
         >
           <svg
