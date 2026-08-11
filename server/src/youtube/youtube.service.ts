@@ -57,7 +57,7 @@ export class YoutubeService {
 
   async getChannel(channelId: string) {
     const response = await this.youtube.channels.list({
-      part: ['snippet', 'statistics'],
+      part: ['snippet', 'statistics', 'contentDetails'],
       id: [channelId],
     });
 
