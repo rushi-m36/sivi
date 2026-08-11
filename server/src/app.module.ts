@@ -7,6 +7,7 @@ import { ChannelModule } from './channel/channel.module';
 import { AuthModule } from './auth/auth.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { CacheModule } from './cache/cache.module';
+import { YoutubeModule } from './youtube/youtube.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -20,6 +21,7 @@ import configuration from './config/configuration';
     AuthModule,
     SubscriptionsModule,
     CacheModule,
+    YoutubeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,29 +5,20 @@ import {
   InternalServerErrorException,
   HttpException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { google, youtube_v3 } from 'googleapis';
 
 import { TVideo, TSearchResult } from './types/video.type';
 import { TComment } from './types/comment.type';
 import { RedisService } from '../cache/redis.service';
+import { YoutubeService } from '../youtube/youtube.service';
 
 @Injectable()
 export class VideoService {
   private readonly logger = new Logger(VideoService.name);
-  private readonly youtube: youtube_v3.Youtube;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly redisService: RedisService,
-  ) {
-    const apiKey = this.configService.get<string>('YOUTUBE_API_KEY') || '';
-
-    this.youtube = google.youtube({
-      version: 'v3',
-      auth: apiKey,
-    });
-  }
+    private readonly youtubeService: YoutubeService,
+  ) {}
 
   async searchVideos(query: string, maxResults = 10): Promise<TSearchResult> {
     try {
@@ -48,12 +39,10 @@ export class VideoService {
         return cached;
       }
 
-      const searchResponse = await this.youtube.search.list({
-        part: ['snippet'],
-        q: normalizedQuery,
-        type: ['video'],
+      const searchResponse = await this.youtubeService.searchVideos(
+        normalizedQuery,
         maxResults,
-      });
+      );
 
       const items = searchResponse.data.items || [];
 
@@ -69,21 +58,9 @@ export class VideoService {
         ),
       );
 
-      // Run both requests simultaneously
       const [detailsResponse, channelResponse] = await Promise.all([
-        videoIds.length > 0
-          ? this.youtube.videos.list({
-              part: ['snippet', 'contentDetails', 'statistics'],
-              id: videoIds,
-            })
-          : Promise.resolve(null),
-
-        channelIds.length > 0
-          ? this.youtube.channels.list({
-              part: ['snippet'],
-              id: channelIds,
-            })
-          : Promise.resolve(null),
+        this.youtubeService.getVideos(videoIds),
+        this.youtubeService.getChannels(channelIds),
       ]);
 
       const videosDetailsMap = new Map<string, any>();
@@ -192,12 +169,7 @@ export class VideoService {
         return cached;
       }
 
-      const response = await this.youtube.videos.list({
-        part: ['snippet', 'contentDetails', 'statistics'],
-        id: [id],
-      });
-
-      const item = response.data.items?.[0];
+      const item = await this.youtubeService.getVideo(id);
 
       if (!item) {
         throw new NotFoundException(`Video with ID ${id} not found`);
@@ -205,18 +177,13 @@ export class VideoService {
 
       const channelId = item.snippet?.channelId;
 
-      const [channelResponse, comments] = await Promise.all([
+      const [channel, comments] = await Promise.all([
         channelId
-          ? this.youtube.channels.list({
-              part: ['snippet', 'statistics'],
-              id: [channelId],
-            })
+          ? this.youtubeService.getChannel(channelId)
           : Promise.resolve(null),
 
         this.getVideoComments(id),
       ]);
-
-      const channel = channelResponse?.data?.items?.[0];
 
       const result: TVideo = {
         id,
@@ -292,11 +259,10 @@ export class VideoService {
         return cached;
       }
 
-      const commentsResponse = await this.youtube.commentThreads.list({
-        part: ['snippet'],
+      const commentsResponse = await this.youtubeService.getComments(
         videoId,
-        maxResults: 20,
-      });
+        20,
+      );
 
       const comments: TComment[] =
         commentsResponse.data.items?.map((item) => {
@@ -304,15 +270,10 @@ export class VideoService {
 
           return {
             id: item.id ?? '',
-
             author: comment?.authorDisplayName ?? '',
-
             authorAvatar: comment?.authorProfileImageUrl ?? '',
-
             text: comment?.textDisplay ?? '',
-
             publishedAt: comment?.publishedAt ?? '',
-
             likeCount: comment?.likeCount ?? 0,
           };
         }) ?? [];

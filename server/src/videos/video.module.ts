@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@/cache/cache.module';
+import { YoutubeModule } from '@/youtube/youtube.module';
 import { YoutubeController } from './video.controller';
 import { VideoService } from './video.service';
 
 @Module({
-  imports: [ConfigModule, CacheModule],
+  imports: [CacheModule, YoutubeModule],
   controllers: [YoutubeController],
   providers: [VideoService],
   exports: [VideoService],
