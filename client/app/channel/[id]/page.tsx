@@ -24,6 +24,7 @@ export default async function ChannelPage({ params }: PageProps) {
         tags: [`channel-${id}`],
       },
     });
+    console.log(channel);
   } catch {
     notFound();
   }

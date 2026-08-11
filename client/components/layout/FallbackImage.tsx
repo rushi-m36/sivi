@@ -17,12 +17,13 @@ export function FallbackImage({
 }: FallbackImageProps) {
   const [imageSrc, setImageSrc] = useState(src || fallback);
 
+  const handleError = () => {
+    if (imageSrc !== fallback) {
+      setImageSrc(fallback);
+    }
+  };
+
   return (
-    <img
-      src={imageSrc}
-      alt={alt}
-      className={className}
-      onError={() => setImageSrc(fallback)}
-    />
+    <img src={imageSrc} alt={alt} className={className} onError={handleError} />
   );
 }
