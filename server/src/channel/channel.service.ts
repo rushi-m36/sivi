@@ -4,10 +4,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { google, youtube_v3 } from 'googleapis';
 
 import { RedisService } from '@/cache/redis.service';
+import { YoutubeService } from '@/youtube/youtube.service';
 import { TVideo } from '@/videos/types/video.type';
 import { TChannel } from '@/channel/channel.type';
 
@@ -15,26 +14,12 @@ import { TChannel } from '@/channel/channel.type';
 export class ChannelService {
   private readonly logger = new Logger(ChannelService.name);
 
-  private readonly youtube: youtube_v3.Youtube;
-
-  // 30 minutes
   private readonly CACHE_TTL = 60 * 30;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly redisService: RedisService,
-  ) {
-    const apiKey = this.configService.get<string>('YOUTUBE_API_KEY');
-
-    if (!apiKey) {
-      throw new Error('YOUTUBE_API_KEY is not configured');
-    }
-
-    this.youtube = google.youtube({
-      version: 'v3',
-      auth: apiKey,
-    });
-  }
+    private readonly youtubeService: YoutubeService,
+  ) {}
 
   async getChannel(id: string): Promise<TChannel> {
     const channelId = id.trim();
@@ -45,9 +30,7 @@ export class ChannelService {
 
     const cacheKey = this.getCacheKey(channelId);
 
-    // --------------------------------
     // 1. Check Redis
-    // --------------------------------
     try {
       const cachedChannel = await this.redisService.get<TChannel>(cacheKey);
 
@@ -55,7 +38,6 @@ export class ChannelService {
         return cachedChannel;
       }
     } catch (error) {
-      // Redis failure should not break the application.
       this.logger.warn(
         `Redis GET failed for ${cacheKey}: ${
           error instanceof Error ? error.message : String(error)
@@ -63,15 +45,8 @@ export class ChannelService {
       );
     }
 
-    // --------------------------------
-    // 2. Fetch channel from YouTube
-    // --------------------------------
-    const response = await this.youtube.channels.list({
-      part: ['snippet', 'statistics', 'contentDetails'],
-      id: [channelId],
-    });
-
-    const channel = response.data.items?.[0];
+    // 2. Fetch channel from centralized YoutubeService
+    const channel = await this.youtubeService.getChannel(channelId);
 
     if (!channel) {
       throw new NotFoundException('Channel not found');
@@ -79,6 +54,7 @@ export class ChannelService {
 
     const snippet = channel.snippet;
     const statistics = channel.statistics;
+
     const uploadsPlaylistId = channel.contentDetails?.relatedPlaylists?.uploads;
 
     const channelTitle = snippet?.title || '';
@@ -89,17 +65,14 @@ export class ChannelService {
       snippet?.thumbnails?.default?.url ||
       '/default-avatar.png';
 
-    // --------------------------------
     // 3. Fetch latest videos
-    // --------------------------------
     let videos: TVideo[] = [];
 
     if (uploadsPlaylistId) {
-      const videosResponse = await this.youtube.playlistItems.list({
-        part: ['snippet'],
-        playlistId: uploadsPlaylistId,
-        maxResults: 5,
-      });
+      const videosResponse = await this.youtubeService.getPlaylistItems(
+        uploadsPlaylistId,
+        5,
+      );
 
       videos =
         videosResponse.data.items?.reduce<TVideo[]>((result, item) => {
@@ -111,13 +84,17 @@ export class ChannelService {
 
           result.push({
             id: videoId,
+
             title: item.snippet?.title || '',
+
             thumbnailUrl:
               item.snippet?.thumbnails?.medium?.url ||
               item.snippet?.thumbnails?.high?.url ||
               item.snippet?.thumbnails?.default?.url ||
               '',
+
             publishedAt: item.snippet?.publishedAt || '',
+
             channel: {
               channelId,
               channelTitle,
@@ -129,9 +106,7 @@ export class ChannelService {
         }, []) || [];
     }
 
-    // --------------------------------
-    // 4. Build final response
-    // --------------------------------
+    // 4. Build response
     const result: TChannel = {
       channelId,
       channelTitle,
@@ -140,13 +115,10 @@ export class ChannelService {
       videos,
     };
 
-    // --------------------------------
-    // 5. Store in Redis
-    // --------------------------------
+    // 5. Cache
     try {
       await this.redisService.set(cacheKey, result, this.CACHE_TTL);
     } catch (error) {
-      // Don't fail the request if Redis SET fails.
       this.logger.warn(
         `Redis SET failed for ${cacheKey}: ${
           error instanceof Error ? error.message : String(error)

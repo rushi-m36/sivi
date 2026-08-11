@@ -85,4 +85,12 @@ export class YoutubeService {
       ...(categoryId ? { videoCategoryId: categoryId } : {}),
     });
   }
+
+  async getPlaylistItems(playlistId: string, maxResults = 5) {
+    return this.youtube.playlistItems.list({
+      part: ['snippet'],
+      playlistId,
+      maxResults,
+    });
+  }
 }

@@ -6,6 +6,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { DeleteSubscriptionDto } from './dto/delete-subscription.dto';
 import { RedisService } from '../cache/redis.service';
+import { YoutubeService } from '../youtube/youtube.service';
 
 export interface YouTubeChannel {
   channelId: string;
@@ -14,35 +15,18 @@ export interface YouTubeChannel {
   subscriberCount: number;
 }
 
-interface YouTubeChannelApiItem {
-  id: string;
-  snippet: {
-    title: string;
-    thumbnails?: {
-      default?: {
-        url: string;
-      };
-      medium?: {
-        url: string;
-      };
-    };
-  };
-  statistics?: {
-    subscriberCount?: string;
-  };
-}
-
 @Injectable()
 export class SubscriptionsService {
   private readonly prisma: PrismaClient;
 
-  private readonly SUBSCRIPTIONS_TTL = 120; // 2 minutes
-  private readonly STATUS_TTL = 60; // 1 minute
-  private readonly CHANNEL_TTL = 600; // 10 minutes
+  private readonly SUBSCRIPTIONS_TTL = 120;
+  private readonly STATUS_TTL = 60;
+  private readonly CHANNEL_TTL = 600;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
+    private readonly youtubeService: YoutubeService,
   ) {
     const connectionString =
       this.configService.get<string>('DATABASE_URL') ||
@@ -57,7 +41,6 @@ export class SubscriptionsService {
   async getSubscription(userId: string): Promise<YouTubeChannel[]> {
     const subscriptionsCacheKey = `subscriptions:user:${userId}`;
 
-    // 1. Check user's complete subscription response
     const cachedSubscriptions = await this.getCache<YouTubeChannel[]>(
       subscriptionsCacheKey,
     );
@@ -66,7 +49,6 @@ export class SubscriptionsService {
       return cachedSubscriptions;
     }
 
-    // 2. Get subscribed channel IDs from PostgreSQL
     const subscriptions = await this.prisma.subscription.findMany({
       where: { userId },
       select: {
@@ -84,10 +66,8 @@ export class SubscriptionsService {
       (subscription) => subscription.channelId,
     );
 
-    // 3. Get channel information from Redis / YouTube
     const channels = await this.getChannelDetails(channelIds);
 
-    // 4. Cache final user response
     await this.setCache(
       subscriptionsCacheKey,
       channels,
@@ -103,14 +83,12 @@ export class SubscriptionsService {
   ): Promise<boolean> {
     const cacheKey = `subscription:status:${userId}:${channelId}`;
 
-    // 1. Check Redis
     const cachedStatus = await this.getCache<boolean>(cacheKey);
 
     if (cachedStatus !== null) {
       return cachedStatus;
     }
 
-    // 2. Check PostgreSQL
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         userId,
@@ -123,7 +101,6 @@ export class SubscriptionsService {
 
     const isSubscribed = !!subscription;
 
-    // 3. Cache result
     await this.setCache(cacheKey, isSubscribed, this.STATUS_TTL);
 
     return isSubscribed;
@@ -132,7 +109,6 @@ export class SubscriptionsService {
   async createSubscription(userId: string, dto: CreateSubscriptionDto) {
     const { channelId } = dto;
 
-    // Check whether subscription already exists
     const alreadyExists = await this.prisma.subscription.findFirst({
       where: {
         userId,
@@ -154,7 +130,6 @@ export class SubscriptionsService {
       },
     });
 
-    // Invalidate caches affected by the new subscription
     await Promise.all([
       this.deleteCache(`subscriptions:user:${userId}`),
       this.deleteCache(`subscription:status:${userId}:${channelId}`),
@@ -186,7 +161,6 @@ export class SubscriptionsService {
       },
     });
 
-    // Invalidate caches affected by the deletion
     await Promise.all([
       this.deleteCache(`subscriptions:user:${userId}`),
       this.deleteCache(`subscription:status:${userId}:${channelId}`),
@@ -209,7 +183,6 @@ export class SubscriptionsService {
     const cachedChannels: YouTubeChannel[] = [];
     const missingChannelIds: string[] = [];
 
-    // Check Redis for every channel
     const cachedResults = await Promise.all(
       uniqueChannelIds.map(async (channelId) => {
         const cacheKey = `youtube:channel:${channelId}`;
@@ -231,7 +204,6 @@ export class SubscriptionsService {
       }
     }
 
-    // Everything was already cached
     if (missingChannelIds.length === 0) {
       return this.orderChannels(uniqueChannelIds, cachedChannels);
     }
@@ -243,7 +215,6 @@ export class SubscriptionsService {
       await Promise.all(chunks.map((chunk) => this.fetchYouTubeChannels(chunk)))
     ).flat();
 
-    // Cache every channel individually
     await Promise.all(
       freshChannels.map((channel) =>
         this.setCache(
@@ -256,50 +227,33 @@ export class SubscriptionsService {
 
     const allChannels = [...cachedChannels, ...freshChannels];
 
-    // Keep the same order as the user's subscriptions
     return this.orderChannels(uniqueChannelIds, allChannels);
   }
 
   /**
-   * Fetch missing channel details from YouTube.
+   * Fetch missing channel details through the centralized
+   * YoutubeService.
    */
   private async fetchYouTubeChannels(
     channelIds: string[],
   ): Promise<YouTubeChannel[]> {
-    const apiKey =
-      this.configService.get<string>('YOUTUBE_API_KEY') ||
-      process.env.YOUTUBE_API_KEY;
-
-    if (!apiKey) {
-      throw new Error('YOUTUBE_API_KEY is not configured');
+    if (channelIds.length === 0) {
+      return [];
     }
 
-    const params = new URLSearchParams({
-      part: 'snippet,statistics',
-      id: channelIds.join(','),
-      key: apiKey,
-    });
+    const response = await this.youtubeService.getChannels(channelIds);
 
-    const url = `https://www.googleapis.com/youtube/v3/channels?${params.toString()}`;
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`YouTube API request failed: ${response.status}`);
-    }
-
-    const data: {
-      items?: YouTubeChannelApiItem[];
-    } = await response.json();
-
-    return (data.items ?? []).map((item) => ({
-      channelId: item.id,
-      channelTitle: item.snippet.title,
-      channelAvatar:
-        item.snippet.thumbnails?.medium?.url ||
-        item.snippet.thumbnails?.default?.url,
-      subscriberCount: Number(item.statistics?.subscriberCount) || 0,
-    }));
+    return (
+      response?.data.items?.map((item) => ({
+        channelId: item.id ?? '',
+        channelTitle: item.snippet?.title ?? '',
+        channelAvatar:
+          item.snippet?.thumbnails?.medium?.url ||
+          item.snippet?.thumbnails?.default?.url ||
+          '/default-avatar.png',
+        subscriberCount: Number(item.statistics?.subscriberCount) || 0,
+      })) ?? []
+    );
   }
 
   /**
@@ -333,9 +287,6 @@ export class SubscriptionsService {
 
   /**
    * Redis GET with graceful fallback.
-   *
-   * If Redis goes down, the application continues
-   * using PostgreSQL / YouTube.
    */
   private async getCache<T>(key: string): Promise<T | null> {
     try {
