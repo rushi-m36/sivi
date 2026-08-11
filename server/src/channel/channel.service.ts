@@ -66,6 +66,7 @@ export class ChannelService {
       '/default-avatar.png';
 
     // 3. Fetch latest videos
+    // 3. Fetch latest videos
     let videos: TVideo[] = [];
 
     if (uploadsPlaylistId) {
@@ -74,36 +75,58 @@ export class ChannelService {
         50,
       );
 
-      videos =
-        videosResponse.data.items?.reduce<TVideo[]>((result, item) => {
-          const videoId = item.snippet?.resourceId?.videoId;
+      const playlistItems = videosResponse.data.items || [];
 
-          if (!videoId) {
-            return result;
-          }
+      // Extract video IDs
+      const videoIds = playlistItems
+        .map((item) => item.snippet?.resourceId?.videoId)
+        .filter((id): id is string => Boolean(id));
 
-          result.push({
-            id: videoId,
+      // Fetch video details including duration
+      const videoDetailsResponse =
+        await this.youtubeService.getVideos(videoIds);
 
-            title: item.snippet?.title || '',
+      const videoDetails = videoDetailsResponse?.data.items || [];
 
-            thumbnailUrl:
-              item.snippet?.thumbnails?.medium?.url ||
-              item.snippet?.thumbnails?.high?.url ||
-              item.snippet?.thumbnails?.default?.url ||
-              '',
+      // Create lookup map: videoId -> duration
+      const durationMap = new Map(
+        videoDetails.map((video) => [
+          video.id,
+          video.contentDetails?.duration || '',
+        ]),
+      );
 
-            publishedAt: item.snippet?.publishedAt || '',
+      videos = playlistItems.reduce<TVideo[]>((result, item) => {
+        const videoId = item.snippet?.resourceId?.videoId;
 
-            channel: {
-              channelId,
-              channelTitle,
-              channelAvatar,
-            },
-          });
-
+        if (!videoId) {
           return result;
-        }, []) || [];
+        }
+
+        result.push({
+          id: videoId,
+
+          title: item.snippet?.title || '',
+
+          thumbnailUrl:
+            item.snippet?.thumbnails?.medium?.url ||
+            item.snippet?.thumbnails?.high?.url ||
+            item.snippet?.thumbnails?.default?.url ||
+            '',
+
+          publishedAt: item.snippet?.publishedAt || '',
+
+          duration: durationMap.get(videoId) || '',
+
+          channel: {
+            channelId,
+            channelTitle,
+            channelAvatar,
+          },
+        });
+
+        return result;
+      }, []);
     }
 
     // 4. Build response
