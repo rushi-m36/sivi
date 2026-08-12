@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { fetchFromBackend } from "@/lib/api";
 import { TChannel } from "@/types/channel.type";
 import { TVideo } from "@/types/video.type";
-import { ChannelCard } from "@/components/channel/ChannelCard";
+import { SubChannelCard } from "../../components/channel/SubChannelCard";
 import VideoGrid from "@/components/video/VideoGrid";
 import Link from "next/link";
 
@@ -96,11 +96,6 @@ export default async function SubscriptionsPage({
         <h1 className="text-2xl font-semibold tracking-tight text-white">
           Subscriptions
         </h1>
-
-        <p className="mt-1 text-sm text-zinc-500">
-          {channels.length} subscribed channel
-          {channels.length !== 1 ? "s" : ""}
-        </p>
       </header>
 
       {error ? (
@@ -140,7 +135,7 @@ export default async function SubscriptionsPage({
 
                 const isSelected = selectedChannelId === channelId;
 
-                return <ChannelCard key={channelId} {...channel} />;
+                return <SubChannelCard key={channelId} {...channel} />;
               })}
             </div>
           </section>
@@ -153,11 +148,6 @@ export default async function SubscriptionsPage({
                   ? "Latest videos"
                   : "Latest from your subscriptions"}
               </h2>
-
-              <span className="text-sm text-zinc-500">
-                {videos.length} video
-                {videos.length !== 1 ? "s" : ""}
-              </span>
             </div>
 
             <VideoGrid videos={videos} />
