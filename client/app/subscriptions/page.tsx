@@ -91,7 +91,7 @@ export default async function SubscriptionsPage({
   const videos = selectedChannelId ? selectedVideos : recentVideos;
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6">
+    <main className="mx-auto w-full max-w-7xl px-0 py-7 sm:px-0">
       <header className="mb-6 border-b border-zinc-800 pb-5">
         <h1 className="text-2xl font-semibold tracking-tight text-white">
           Subscriptions

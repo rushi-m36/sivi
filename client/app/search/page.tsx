@@ -47,7 +47,7 @@ function SearchPageContent() {
 
   return (
     <main className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
-      <div className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+      <div className="mx-auto w-full max-w-[1600px] px-0 py-5 sm:px-0 sm:py-7 lg:px-0">
         {/* Header */}
         <header className="mb-6 border-b border-zinc-200 pb-5 dark:border-zinc-800">
           <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
