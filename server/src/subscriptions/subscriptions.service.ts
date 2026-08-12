@@ -49,7 +49,7 @@ export class SubscriptionsService {
   }> {
     const subscriptionsCacheKey = `subscriptions:user:${userId}`;
 
-    const cachedSubscriptions = await this.getCache<{
+    const cachedSubscriptions = await this.redisService.get<{
       channels: YouTubeChannel[];
       recentVideos: TVideo[];
     }>(subscriptionsCacheKey);
@@ -71,7 +71,7 @@ export class SubscriptionsService {
         recentVideos: [],
       };
 
-      await this.setCache(
+      await this.redisService.set(
         subscriptionsCacheKey,
         emptyResponse,
         this.SUBSCRIPTIONS_TTL,
@@ -164,7 +164,7 @@ export class SubscriptionsService {
       recentVideos,
     };
 
-    await this.setCache(
+    await this.redisService.set(
       subscriptionsCacheKey,
       response,
       this.SUBSCRIPTIONS_TTL,
@@ -179,7 +179,7 @@ export class SubscriptionsService {
   ): Promise<boolean> {
     const cacheKey = `subscription:status:${userId}:${channelId}`;
 
-    const cachedStatus = await this.getCache<boolean>(cacheKey);
+    const cachedStatus = await this.redisService.get<boolean>(cacheKey);
 
     if (cachedStatus !== null) {
       return cachedStatus;
@@ -197,7 +197,7 @@ export class SubscriptionsService {
 
     const isSubscribed = !!subscription;
 
-    await this.setCache(cacheKey, isSubscribed, this.STATUS_TTL);
+    await this.redisService.set(cacheKey, isSubscribed, this.STATUS_TTL);
 
     return isSubscribed;
   }
@@ -227,8 +227,8 @@ export class SubscriptionsService {
     });
 
     await Promise.all([
-      this.deleteCache(`subscriptions:user:${userId}`),
-      this.deleteCache(`subscription:status:${userId}:${channelId}`),
+      this.redisService.delete(`subscriptions:user:${userId}`),
+      this.redisService.delete(`subscription:status:${userId}:${channelId}`),
     ]);
 
     return subscription;
@@ -258,8 +258,8 @@ export class SubscriptionsService {
     });
 
     await Promise.all([
-      this.deleteCache(`subscriptions:user:${userId}`),
-      this.deleteCache(`subscription:status:${userId}:${channelId}`),
+      this.redisService.delete(`subscriptions:user:${userId}`),
+      this.redisService.delete(`subscription:status:${userId}:${channelId}`),
     ]);
 
     return deletedSubscription;
@@ -283,7 +283,7 @@ export class SubscriptionsService {
       uniqueChannelIds.map(async (channelId) => {
         const cacheKey = `youtube:channel:${channelId}`;
 
-        const cached = await this.getCache<YouTubeChannel>(cacheKey);
+        const cached = await this.redisService.get<YouTubeChannel>(cacheKey);
 
         return {
           channelId,
@@ -313,7 +313,7 @@ export class SubscriptionsService {
 
     await Promise.all(
       freshChannels.map((channel) =>
-        this.setCache(
+        this.redisService.set(
           `youtube:channel:${channel.channelId}`,
           channel,
           this.CHANNEL_TTL,
@@ -380,40 +380,5 @@ export class SubscriptionsService {
     }
 
     return chunks;
-  }
-
-  /**
-   * Redis GET with graceful fallback.
-   */
-  private async getCache<T>(key: string): Promise<T | null> {
-    try {
-      return await this.redisService.get<T>(key);
-    } catch (error) {
-      console.error(`Redis GET failed for ${key}:`, error);
-
-      return null;
-    }
-  }
-
-  /**
-   * Redis SET with graceful fallback.
-   */
-  private async setCache<T>(key: string, value: T, ttl: number): Promise<void> {
-    try {
-      await this.redisService.set(key, value, ttl);
-    } catch (error) {
-      console.error(`Redis SET failed for ${key}:`, error);
-    }
-  }
-
-  /**
-   * Redis DELETE with graceful fallback.
-   */
-  private async deleteCache(key: string): Promise<void> {
-    try {
-      await this.redisService.delete(key);
-    } catch (error) {
-      console.error(`Redis DELETE failed for ${key}:`, error);
-    }
   }
 }
