@@ -13,17 +13,22 @@ export default function SubscriptionsLoading() {
           <div className="h-6 w-24 animate-pulse rounded bg-zinc-800" />
         </div>
 
-        <div className="flex gap-6 overflow-hidden pb-3">
+        <div className="flex gap-4 overflow-hidden pb-3">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="w-28 shrink-0">
+            <div
+              key={index}
+              className="flex w-52 shrink-0 items-center gap-4 rounded-xl px-4 py-3"
+            >
               {/* Avatar */}
-              <div className="mx-auto h-20 w-20 animate-pulse rounded-full bg-zinc-800" />
+              <div className="h-14 w-14 shrink-0 animate-pulse rounded-full bg-zinc-800" />
 
-              {/* Channel name */}
-              <div className="mx-auto mt-3 h-4 w-20 animate-pulse rounded bg-zinc-800" />
+              <div className="min-w-0 flex-1">
+                {/* Channel name */}
+                <div className="h-4 w-24 animate-pulse rounded bg-zinc-800" />
 
-              {/* Subscriber count */}
-              <div className="mx-auto mt-2 h-3 w-14 animate-pulse rounded bg-zinc-900" />
+                {/* Subscriber count */}
+                <div className="mt-2 h-3 w-16 animate-pulse rounded bg-zinc-900" />
+              </div>
             </div>
           ))}
         </div>
