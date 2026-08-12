@@ -116,8 +116,8 @@ export class ChannelService {
             title: item.snippet?.title || '',
 
             thumbnailUrl:
-              item.snippet?.thumbnails?.medium?.url ||
               item.snippet?.thumbnails?.high?.url ||
+              item.snippet?.thumbnails?.medium?.url ||
               item.snippet?.thumbnails?.default?.url ||
               '',
 
