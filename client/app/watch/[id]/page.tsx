@@ -35,22 +35,57 @@ export default async function WatchPage({ params }: WatchPageProps) {
     : "";
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-0 py-0 sm:px-0 lg:px-8 lg:py-5">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Main video section */}
         <div className="min-w-0 lg:col-span-2">
-          <div className="lg:sticky lg:top-4">
-            <div className="overflow-hidden bg-black">
-              <div className="aspect-video w-full">
-                <iframe
-                  className="h-full w-full border-0"
-                  src={`https://www.youtube.com/embed/${id}?autoplay=1`}
-                  title="YouTube video player"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+          {/* =========================
+              MOBILE VIDEO
+              Navbar height = 56px
+              ========================= */}
+
+          <div className="fixed left-0 top-14 z-0 w-full bg-black lg:hidden">
+            <div className="aspect-video w-full overflow-hidden bg-black">
+              <iframe
+                className="block h-full w-full border-0"
+                src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`}
+                title={videoData?.title || "YouTube video player"}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          </div>
+
+          {/* Only reserve the actual video height */}
+          <div className="aspect-video w-full lg:hidden" />
+
+          {/* =========================
+              DESKTOP VIDEO
+              Original behavior
+              ========================= */}
+
+          <div className="hidden lg:block">
+            <div className="lg:sticky lg:top-4">
+              <div className="overflow-hidden bg-black">
+                <div className="aspect-video w-full">
+                  <iframe
+                    className="h-full w-full border-0"
+                    src={`https://www.youtube.com/embed/${id}?autoplay=1`}
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
               </div>
             </div>
+          </div>
 
+          {/* =========================
+              VIDEO INFORMATION
+              ========================= */}
+
+          <div className="px-4 sm:px-6 lg:px-0">
             <div className="border-b border-zinc-800 py-4">
               <h1
                 className="text-lg font-semibold leading-6 text-white sm:text-xl"
@@ -97,7 +132,11 @@ export default async function WatchPage({ params }: WatchPageProps) {
           </div>
         </div>
 
-        <div className="min-w-0">
+        {/* =========================
+            COMMENTS
+            ========================= */}
+
+        <div className="min-w-0 px-4 sm:px-6 lg:px-0">
           <div className="border-b border-zinc-800 pb-4">
             <h2 className="text-base font-semibold text-white">Comments</h2>
           </div>
