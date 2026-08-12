@@ -35,15 +35,16 @@ export default async function WatchPage({ params }: WatchPageProps) {
     : "";
 
   return (
-    <div className="mx-auto max-w-7xl px-0 py-0 sm:px-0 lg:px-8 lg:py-5">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* =========================
-            MAIN VIDEO SECTION
-            ========================= */}
-        <div className="min-w-0 lg:col-span-2">
-          {/* ONE iframe only — works on both mobile and desktop */}
-          <div className="sticky top-14 z-10 w-full bg-black lg:static">
-            <div className="aspect-video w-full overflow-hidden bg-black lg:sticky lg:top-4">
+    <main className="mx-auto max-w-7xl pt-0 lg:px-7">
+      <div className="grid grid-cols-1 lg:h-[calc(100vh-3.5rem)] lg:grid-cols-3 lg:gap-8">
+        {/* =========================================
+            LEFT COLUMN
+            Video + information
+            ========================================= */}
+        <div className="min-w-0 lg:col-span-2 lg:h-full lg:overflow-y-auto">
+          {/* ONE AND ONLY ONE IFRAME */}
+          <div className="sticky top-14 z-20 w-full bg-black lg:static">
+            <div className="aspect-video w-full overflow-hidden bg-black lg:h-[65vh] lg:aspect-auto">
               <iframe
                 className="block h-full w-full border-0"
                 src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`}
@@ -55,9 +56,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
             </div>
           </div>
 
-          {/* =========================
-              VIDEO INFORMATION
-              ========================= */}
+          {/* VIDEO INFORMATION */}
           <div className="px-4 sm:px-6 lg:px-0">
             <div className="border-b border-zinc-800 py-4">
               <h1
@@ -88,7 +87,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
                     {views} {published && `• ${published}`}
                   </div>
 
-                  <div className="line-clamp-3 whitespace-pre-line wrap-break-word leading-6 text-zinc-400 group-open:line-clamp-none">
+                  <div className="line-clamp-3 whitespace-pre-line break-words leading-6 text-zinc-400 group-open:line-clamp-none">
                     {videoData?.description || "No description available."}
                   </div>
 
@@ -105,35 +104,34 @@ export default async function WatchPage({ params }: WatchPageProps) {
           </div>
         </div>
 
-        {/* =========================
+        {/* =========================================
             COMMENTS
-            ========================= */}
-        <div className="min-w-0 px-4 sm:px-6 lg:px-0">
+            Independent scroll on desktop
+            ========================================= */}
+        <aside className="min-w-0 px-4 pb-10 sm:px-6 lg:h-full lg:overflow-y-auto lg:px-0">
           <div className="border-b border-zinc-800 pb-4">
             <h2 className="text-base font-semibold text-white">Comments</h2>
           </div>
 
-          <div>
-            {videoData?.comments?.length ? (
-              videoData.comments.map((comment: TComment) => (
-                <CommentCard
-                  key={comment.id}
-                  id={comment.id}
-                  author={comment.author}
-                  authorAvatar={comment.authorAvatar}
-                  text={comment.text}
-                  publishedAt={comment.publishedAt}
-                  likeCount={comment.likeCount}
-                />
-              ))
-            ) : (
-              <div className="border-b border-zinc-800 py-8 text-center text-sm text-zinc-500">
-                No comments available.
-              </div>
-            )}
-          </div>
-        </div>
+          {videoData?.comments?.length ? (
+            videoData.comments.map((comment: TComment) => (
+              <CommentCard
+                key={comment.id}
+                id={comment.id}
+                author={comment.author}
+                authorAvatar={comment.authorAvatar}
+                text={comment.text}
+                publishedAt={comment.publishedAt}
+                likeCount={comment.likeCount}
+              />
+            ))
+          ) : (
+            <div className="py-8 text-center text-sm text-zinc-500">
+              No comments available.
+            </div>
+          )}
+        </aside>
       </div>
-    </div>
+    </main>
   );
 }
