@@ -32,7 +32,7 @@ export default function Home() {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center px-4">
+    <main className="relative flex min-h-screen items-center justify-center px-0">
            {" "}
       {showDisclaimer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">

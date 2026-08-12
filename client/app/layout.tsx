@@ -47,7 +47,7 @@ export default function RootLayout({
   <div class="spinner" style="top: 65px" role="spinner"><div class="spinner-icon"></div></div>'
             zIndex={999999}
           />
-          <div className="mx-auto flex w-full max-w-7xl flex-col px-3 pb-6 pt-3 sm:px-4 lg:px-6">
+          <div className="mx-auto flex w-full max-w-7xl flex-col px-1 pb-6 pt-3 sm:px-1 lg:px-6">
             <div className="mb-4">
               <Navbar />
             </div>
