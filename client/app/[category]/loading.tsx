@@ -2,18 +2,11 @@ export default function Loading() {
   return (
     <main className="min-h-screen px-4 py-0">
       <div className="mx-auto w-full max-w-6xl">
-        {/* Categories */}
-        <section className="py-10">
-          <div className="mb-5 h-7 w-28 animate-pulse rounded bg-zinc-800" />
+        {/* Header */}
+        <section className="py-8">
+          <div className="mb-6 h-4 w-12 animate-pulse rounded bg-zinc-800" />
 
-          <div className="flex flex-wrap gap-3">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-9 w-24 animate-pulse rounded-full bg-zinc-800"
-              />
-            ))}
-          </div>
+          <div className="h-8 w-48 animate-pulse rounded bg-zinc-800" />
         </section>
 
         {/* Trending */}
