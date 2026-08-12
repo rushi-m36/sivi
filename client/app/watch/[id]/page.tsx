@@ -41,7 +41,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
         <section className="min-w-0 lg:col-span-2">
           {/* Video */}
           <div className="w-full overflow-hidden bg-black">
-            <div className="aspect-[16/10] w-full sm:aspect-video">
+            <div className="aspect-16/10 w-full sm:aspect-video">
               <iframe
                 className="block h-full w-full border-0"
                 src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`}
@@ -85,7 +85,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
                     {published && ` • ${published}`}
                   </div>
 
-                  <div className="line-clamp-3 whitespace-pre-line break-words leading-6 text-zinc-400 group-open:line-clamp-none">
+                  <div className="line-clamp-3 whitespace-pre-line wrap-break-word leading-6 text-zinc-400 group-open:line-clamp-none">
                     {videoData?.description || "No description available."}
                   </div>
 
