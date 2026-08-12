@@ -35,16 +35,13 @@ export default async function WatchPage({ params }: WatchPageProps) {
     : "";
 
   return (
-    <main className="mx-auto max-w-7xl pt-0 lg:px-7">
-      <div className="grid grid-cols-1 lg:h-[calc(100vh-3.5rem)] lg:grid-cols-3 lg:gap-8">
-        {/* =========================================
-            LEFT COLUMN
-            Video + information
-            ========================================= */}
-        <div className="min-w-0 lg:col-span-2 lg:h-full lg:overflow-y-auto">
-          {/* ONE AND ONLY ONE IFRAME */}
-          <div className="sticky top-14 z-20 w-full bg-black lg:static">
-            <div className="aspect-video w-full overflow-hidden bg-black lg:h-[65vh] lg:aspect-auto">
+    <main className="mx-auto w-full max-w-7xl">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:px-6">
+        {/* VIDEO + DETAILS */}
+        <section className="min-w-0 lg:col-span-2">
+          {/* Video */}
+          <div className="w-full overflow-hidden bg-black">
+            <div className="aspect-[16/10] w-full sm:aspect-video">
               <iframe
                 className="block h-full w-full border-0"
                 src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`}
@@ -56,7 +53,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
             </div>
           </div>
 
-          {/* VIDEO INFORMATION */}
+          {/* Details */}
           <div className="px-4 sm:px-6 lg:px-0">
             <div className="border-b border-zinc-800 py-4">
               <h1
@@ -84,10 +81,11 @@ export default async function WatchPage({ params }: WatchPageProps) {
               <details className="group mt-4 border border-zinc-800 bg-zinc-900">
                 <summary className="cursor-pointer list-none p-3 text-sm text-zinc-300 [&::-webkit-details-marker]:hidden">
                   <div className="mb-2 font-medium text-white">
-                    {views} {published && `• ${published}`}
+                    {views}
+                    {published && ` • ${published}`}
                   </div>
 
-                  <div className="line-clamp-3 whitespace-pre-line wrap-break-word leading-6 text-zinc-400 group-open:line-clamp-none">
+                  <div className="line-clamp-3 whitespace-pre-line break-words leading-6 text-zinc-400 group-open:line-clamp-none">
                     {videoData?.description || "No description available."}
                   </div>
 
@@ -102,13 +100,10 @@ export default async function WatchPage({ params }: WatchPageProps) {
               </details>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* =========================================
-            COMMENTS
-            Independent scroll on desktop
-            ========================================= */}
-        <aside className="min-w-0 px-4 pb-10 sm:px-6 lg:h-full lg:overflow-y-auto lg:px-0">
+        {/* COMMENTS */}
+        <aside className="min-w-0 px-4 pb-10 sm:px-6 lg:px-0">
           <div className="border-b border-zinc-800 pb-4">
             <h2 className="text-base font-semibold text-white">Comments</h2>
           </div>
