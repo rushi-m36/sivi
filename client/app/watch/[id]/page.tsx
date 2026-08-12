@@ -43,7 +43,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
               <div className="aspect-video w-full">
                 <iframe
                   className="h-full w-full border-0"
-                  src={`https://www.youtube.com/embed/${id}`}
+                  src={`https://www.youtube.com/embed/${id}?autoplay=1`}
                   title="YouTube video player"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
