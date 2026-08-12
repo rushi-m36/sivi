@@ -66,7 +66,6 @@ export class ChannelService {
       '/default-avatar.png';
 
     // 3. Fetch latest videos
-    // 3. Fetch latest videos
     let videos: TVideo[] = [];
 
     if (uploadsPlaylistId) {
@@ -82,51 +81,64 @@ export class ChannelService {
         .map((item) => item.snippet?.resourceId?.videoId)
         .filter((id): id is string => Boolean(id));
 
-      // Fetch video details including duration
-      const videoDetailsResponse =
-        await this.youtubeService.getVideos(videoIds);
+      if (videoIds.length > 0) {
+        // Fetch video details including duration and statistics
+        const videoDetailsResponse =
+          await this.youtubeService.getVideos(videoIds);
 
-      const videoDetails = videoDetailsResponse?.data.items || [];
+        const videoDetails = videoDetailsResponse?.data.items || [];
 
-      // Create lookup map: videoId -> duration
-      const durationMap = new Map(
-        videoDetails.map((video) => [
-          video.id,
-          video.contentDetails?.duration || '',
-        ]),
-      );
+        // Create lookup map: videoId -> video details
+        const videoDetailsMap = new Map(
+          videoDetails.map((video) => [
+            video.id,
+            {
+              duration: video.contentDetails?.duration || '',
+              viewCount: video.statistics?.viewCount || null,
+              likeCount: video.statistics?.likeCount || null,
+              commentCount: video.statistics?.commentCount || null,
+            },
+          ]),
+        );
 
-      videos = playlistItems.reduce<TVideo[]>((result, item) => {
-        const videoId = item.snippet?.resourceId?.videoId;
+        videos = playlistItems.reduce<TVideo[]>((result, item) => {
+          const videoId = item.snippet?.resourceId?.videoId;
 
-        if (!videoId) {
+          if (!videoId) {
+            return result;
+          }
+
+          const details = videoDetailsMap.get(videoId);
+
+          result.push({
+            id: videoId,
+
+            title: item.snippet?.title || '',
+
+            thumbnailUrl:
+              item.snippet?.thumbnails?.medium?.url ||
+              item.snippet?.thumbnails?.high?.url ||
+              item.snippet?.thumbnails?.default?.url ||
+              '',
+
+            publishedAt: item.snippet?.publishedAt || '',
+
+            duration: details?.duration || '',
+
+            viewCount: details?.viewCount || null,
+
+            likeCount: details?.likeCount || null,
+
+            channel: {
+              channelId,
+              channelTitle,
+              channelAvatar,
+            },
+          });
+
           return result;
-        }
-
-        result.push({
-          id: videoId,
-
-          title: item.snippet?.title || '',
-
-          thumbnailUrl:
-            item.snippet?.thumbnails?.medium?.url ||
-            item.snippet?.thumbnails?.high?.url ||
-            item.snippet?.thumbnails?.default?.url ||
-            '',
-
-          publishedAt: item.snippet?.publishedAt || '',
-
-          duration: durationMap.get(videoId) || '',
-
-          channel: {
-            channelId,
-            channelTitle,
-            channelAvatar,
-          },
-        });
-
-        return result;
-      }, []);
+        }, []);
+      }
     }
 
     // 4. Build response

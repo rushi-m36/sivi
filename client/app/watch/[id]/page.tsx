@@ -99,9 +99,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
 
         <div className="min-w-0">
           <div className="border-b border-zinc-800 pb-4">
-            <h2 className="text-base font-semibold text-white">
-              {videoData?.commentCount ?? 0} Comments
-            </h2>
+            <h2 className="text-base font-semibold text-white">Comments</h2>
           </div>
 
           <div>
