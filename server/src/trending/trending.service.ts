@@ -1,15 +1,29 @@
 import { Injectable } from '@nestjs/common';
+import { RedisService } from '../cache/redis.service';
 import { YoutubeService } from '../youtube/youtube.service';
 
 @Injectable()
 export class TrendingService {
-  constructor(private readonly youtubeService: YoutubeService) {}
+  private readonly CACHE_TTL = 300; // 5 minutes
+
+  constructor(
+    private readonly youtubeService: YoutubeService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async getTrendingVideos(
     regionCode = 'IN',
     categoryId?: string,
     maxResults = 20,
   ) {
+    const cacheKey = this.buildCacheKey(regionCode, categoryId, maxResults);
+
+    const cached = await this.redisService.get(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const response = await this.youtubeService.getTrendingVideos(
       regionCode,
       categoryId,
@@ -50,7 +64,7 @@ export class TrendingService {
       ]),
     );
 
-    return videos.map((video) => {
+    const result = videos.map((video) => {
       const channelId = video.snippet?.channelId ?? '';
 
       return {
@@ -74,5 +88,22 @@ export class TrendingService {
         likeCount: video.statistics?.likeCount ?? null,
       };
     });
+
+    await this.redisService.set(cacheKey, result, this.CACHE_TTL);
+
+    return result;
+  }
+
+  private buildCacheKey(
+    regionCode: string,
+    categoryId?: string,
+    maxResults = 20,
+  ): string {
+    return [
+      'trending',
+      regionCode.toUpperCase(),
+      categoryId ?? 'all',
+      maxResults,
+    ].join(':');
   }
 }
