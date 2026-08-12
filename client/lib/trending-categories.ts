@@ -1,0 +1,17 @@
+export const categories = [
+  { id: "1", slug: "film-animation", name: "Film & Animation" },
+  { id: "2", slug: "autos-vehicles", name: "Autos & Vehicles" },
+  { id: "10", slug: "music", name: "Music" },
+  { id: "15", slug: "pets-animals", name: "Pets & Animals" },
+  { id: "17", slug: "sports", name: "Sports" },
+  { id: "19", slug: "travel-events", name: "Travel & Events" },
+  { id: "20", slug: "gaming", name: "Gaming" },
+  { id: "22", slug: "people-blogs", name: "People & Blogs" },
+  { id: "23", slug: "comedy", name: "Comedy" },
+  { id: "24", slug: "entertainment", name: "Entertainment" },
+  { id: "25", slug: "news-politics", name: "News & Politics" },
+  { id: "26", slug: "howto-style", name: "Howto & Style" },
+  { id: "27", slug: "education", name: "Education" },
+  { id: "28", slug: "science-technology", name: "Science & Technology" },
+  { id: "29", slug: "nonprofits-activism", name: "Nonprofits & Activism" },
+];

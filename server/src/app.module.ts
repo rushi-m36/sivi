@@ -9,6 +9,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { CacheModule } from './cache/cache.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { HealthModule } from './health/health.module';
+import { TrendingModule } from './trending/trending.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -24,6 +25,7 @@ import configuration from './config/configuration';
     CacheModule,
     YoutubeModule,
     HealthModule,
+    TrendingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
