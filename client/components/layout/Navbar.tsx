@@ -1,5 +1,6 @@
 "use client";
 
+import { Home, Library } from "lucide-react";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
@@ -10,18 +11,21 @@ type Tab = {
   id: string;
   label: string;
   href: string;
+  icon: React.ElementType;
 };
 
 const tabs: Tab[] = [
   {
-    id: "search",
-    label: "Search",
+    id: "home",
+    label: "Home",
     href: "/",
+    icon: Home,
   },
   {
     id: "subscriptions",
     label: "Subscriptions",
     href: "/subscriptions",
+    icon: Library,
   },
 ];
 
@@ -68,7 +72,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             onClick={() => setIsSidebarOpen(true)}
             aria-label="Open navigation"
             aria-expanded={isSidebarOpen}
-            className="flex h-9 w-9 shrink-0 items-center justify-center text-zinc-400 transition hover:text-white cursor-pointer"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center text-zinc-400 transition hover:text-white"
           >
             <svg
               className="h-5 w-5"
@@ -84,14 +88,12 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
               />
             </svg>
           </button>
+
           {/* Logo */}
-          <Link href="/">
-            <button
-              type="button"
-              className="shrink-0 text-lg font-semibold tracking-tight text-white cursor-pointer"
-            >
+          <Link href="/" className="shrink-0">
+            <span className="text-lg font-semibold tracking-tight text-white">
               Sivi
-            </button>
+            </span>
           </Link>
 
           {/* Search */}
@@ -119,20 +121,17 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
       >
         {/* Sidebar header */}
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 px-4">
-          <Link href="/">
-            <button
-              type="button"
-              className="text-lg font-semibold tracking-tight text-white cursor-pointer"
-            >
+          <Link href="/" onClick={() => setIsSidebarOpen(false)}>
+            <span className="text-lg font-semibold tracking-tight text-white">
               Sivi
-            </button>
+            </span>
           </Link>
 
           <button
             type="button"
             onClick={() => setIsSidebarOpen(false)}
             aria-label="Close navigation"
-            className="flex h-9 w-9 items-center justify-center text-zinc-500 transition hover:text-white cursor-pointer"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center text-zinc-500 transition hover:text-white"
           >
             <svg
               className="h-5 w-5"
@@ -149,6 +148,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             </svg>
           </button>
         </div>
+
         {/* Navigation */}
         <nav className="flex-1 px-2 py-3">
           <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-zinc-600">
@@ -157,47 +157,20 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
 
           {tabs.map((tab) => {
             const active = isActiveTab(tab);
+            const Icon = tab.icon;
 
             return (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => navigate(tab.href)}
-                className={`cursor-pointer mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                className={`mb-1 flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
                   active
                     ? "bg-zinc-900 text-white"
                     : "text-zinc-400 hover:bg-zinc-900/70 hover:text-white"
                 }`}
               >
-                {tab.id === "search" ? (
-                  <svg
-                    className="h-4 w-4 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle cx="11" cy="11" r="6.5" strokeWidth="1.7" />
-                    <path
-                      strokeLinecap="round"
-                      strokeWidth="1.7"
-                      d="m16 16 4 4"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="h-4 w-4 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.7"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                )}
+                <Icon className="h-4 w-4 shrink-0" strokeWidth={1.7} />
 
                 <span>{tab.label}</span>
               </button>
@@ -213,7 +186,6 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm text-zinc-400 transition hover:text-white"
           >
-            {/* GitHub logo */}
             <svg
               className="h-4 w-4"
               viewBox="0 0 24 24"
@@ -222,6 +194,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             >
               <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.08 1.84 1.23 1.84 1.23 1.07 1.83 2.8 1.3 3.49.99.11-.77.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.95 0-1.31.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6-.01c2.3-1.55 3.3-1.23 3.3-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.62-2.81 5.64-5.49 5.94.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57A12 12 0 0 0 12 .5Z" />
             </svg>
+
             <span>GitHub</span>
           </a>
 
@@ -233,13 +206,12 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm text-zinc-400 transition hover:text-white"
           >
-            {/* Coffee logo */}
             <svg
               className="h-4 w-4"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.7"
+              strokeWidth={1.7}
               aria-hidden="true"
             >
               <path
@@ -253,6 +225,7 @@ export default function Navbar({ query = "", onSearch }: NavbarProps) {
                 d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 21h8M9 18v3"
               />
             </svg>
+
             <span>Buy me a coffee</span>
           </a>
         </div>
