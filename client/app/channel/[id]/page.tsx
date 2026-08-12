@@ -38,7 +38,7 @@ export default async function ChannelPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-transparent">
-      <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-0 py-4 sm:px-6 sm:py-6 lg:px-8">
         <header className="border-b border-zinc-200 pb-5 dark:border-zinc-800 sm:pb-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3 sm:gap-5">
