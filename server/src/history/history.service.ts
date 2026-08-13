@@ -1,31 +1,28 @@
-import { Injectable, NotFoundException, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { Injectable, NotFoundException } from '@nestjs/common';
+
 import { YoutubeService } from '../youtube/youtube.service';
-import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from '../cache/redis.service';
+
 import { UpdateHistoryDto } from './history.dto';
 import { THistoryVideo } from './history-video.type';
 
 @Injectable()
-export class HistoryService implements OnModuleDestroy {
-  private readonly prisma: PrismaClient;
+export class HistoryService {
+  private readonly HISTORY_CACHE_TTL = 60;
 
   constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
     private readonly youtubeService: YoutubeService,
-    private readonly configService: ConfigService,
-  ) {
-    const connectionString =
-      this.configService.get<string>('DATABASE_URL') ||
-      process.env.DATABASE_URL ||
-      '';
+  ) {}
 
-    this.prisma = new PrismaClient({
-      adapter: new PrismaPg({ connectionString }),
-    });
+  private getHistoryCacheKey(userId: string): string {
+    return `history:user:${userId}`;
   }
 
-  async onModuleDestroy() {
-    await this.prisma.$disconnect();
+  private getProgressCacheKey(userId: string, videoId: string): string {
+    return `history:user:${userId}:video:${videoId}`;
   }
 
   async updateProgress(userId: string, videoId: string, dto: UpdateHistoryDto) {
@@ -35,7 +32,7 @@ export class HistoryService implements OnModuleDestroy {
         ? dto.watchedSeconds >= dto.durationSeconds * 0.95
         : false);
 
-    return this.prisma.watchHistory.upsert({
+    const history = await this.prisma.watchHistory.upsert({
       where: {
         userId_videoId: {
           userId,
@@ -59,10 +56,26 @@ export class HistoryService implements OnModuleDestroy {
         lastWatchedAt: new Date(),
       },
     });
+
+    // Invalidate both caches.
+    await Promise.all([
+      this.redis.delete(this.getHistoryCacheKey(userId)),
+      this.redis.delete(this.getProgressCacheKey(userId, videoId)),
+    ]);
+
+    return history;
   }
 
   async getProgress(userId: string, videoId: string) {
-    return this.prisma.watchHistory.findUnique({
+    const cacheKey = this.getProgressCacheKey(userId, videoId);
+
+    const cached = await this.redis.get(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const history = await this.prisma.watchHistory.findUnique({
       where: {
         userId_videoId: {
           userId,
@@ -70,9 +83,25 @@ export class HistoryService implements OnModuleDestroy {
         },
       },
     });
+
+    if (history) {
+      await this.redis.set(cacheKey, history, this.HISTORY_CACHE_TTL);
+    }
+
+    return history;
   }
 
   async getHistory(userId: string): Promise<THistoryVideo[]> {
+    const cacheKey = this.getHistoryCacheKey(userId);
+
+    // 1. Check Redis.
+    const cached = await this.redis.get<THistoryVideo[]>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    // 2. Get history from PostgreSQL.
     const history = await this.prisma.watchHistory.findMany({
       where: {
         userId,
@@ -86,8 +115,10 @@ export class HistoryService implements OnModuleDestroy {
       return [];
     }
 
+    // 3. Get YouTube video IDs.
     const videoIds = history.map((item) => item.videoId);
 
+    // 4. Get video information from YouTube.
     const response = await this.youtubeService.getVideos(videoIds);
 
     const videos = response?.data.items ?? [];
@@ -98,6 +129,7 @@ export class HistoryService implements OnModuleDestroy {
         {
           id: video.id!,
           title: video.snippet?.title ?? '',
+
           description: video.snippet?.description ?? '',
 
           thumbnailUrl:
@@ -108,7 +140,9 @@ export class HistoryService implements OnModuleDestroy {
 
           channel: {
             channelId: video.snippet?.channelId ?? '',
+
             channelTitle: video.snippet?.channelTitle ?? '',
+
             channelAvatar: '',
             subscriberCount: null,
           },
@@ -128,7 +162,8 @@ export class HistoryService implements OnModuleDestroy {
       ]),
     );
 
-    return history.reduce<THistoryVideo[]>((result, item) => {
+    // 5. Combine PostgreSQL history + YouTube data.
+    const result = history.reduce<THistoryVideo[]>((result, item) => {
       const video = videoMap.get(item.videoId);
 
       if (!video) {
@@ -137,14 +172,23 @@ export class HistoryService implements OnModuleDestroy {
 
       result.push({
         video,
+
         watchedSeconds: item.watchedSeconds,
+
         durationSeconds: item.durationSeconds,
+
         completed: item.completed,
+
         lastWatchedAt: item.lastWatchedAt,
       });
 
       return result;
     }, []);
+
+    // 6. Cache final response.
+    await this.redis.set(cacheKey, result, this.HISTORY_CACHE_TTL);
+
+    return result;
   }
 
   async deleteHistory(userId: string, videoId: string) {
@@ -170,6 +214,13 @@ export class HistoryService implements OnModuleDestroy {
       },
     });
 
+    // Invalidate caches.
+    await Promise.all([
+      this.redis.delete(this.getHistoryCacheKey(userId)),
+
+      this.redis.delete(this.getProgressCacheKey(userId, videoId)),
+    ]);
+
     return {
       message: 'Watch history deleted',
     };
@@ -181,6 +232,9 @@ export class HistoryService implements OnModuleDestroy {
         userId,
       },
     });
+
+    // Clear user's history cache.
+    await this.redis.delete(this.getHistoryCacheKey(userId));
 
     return {
       message: 'Watch history cleared',

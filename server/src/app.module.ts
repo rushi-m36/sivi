@@ -11,6 +11,7 @@ import { YoutubeModule } from './youtube/youtube.module';
 import { HealthModule } from './health/health.module';
 import { TrendingModule } from './trending/trending.module';
 import { HistoryModule } from './history/history.module';
+import { PrismaModule } from './prisma/prisma.module';
 import configuration from './config/configuration';
 
 @Module({
