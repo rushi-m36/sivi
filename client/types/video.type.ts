@@ -27,3 +27,11 @@ export type SearchResult = {
   prevPageToken?: string;
   totalResults: number;
 };
+
+export type THistoryVideo = {
+  video: TVideo;
+  watchedSeconds: number;
+  durationSeconds: number | null;
+  completed: boolean;
+  lastWatchedAt: Date | string;
+};

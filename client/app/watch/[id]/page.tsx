@@ -1,6 +1,7 @@
 import { formatViewCount, formatPublishedAt } from "../../../lib/youtube";
 import { CommentCard } from "@/components/video/CommentCard";
 import { ChannelCard } from "@/components/channel/ChannelCard";
+import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { TVideo } from "../../../types/video.type";
 import { fetchFromBackend } from "@/lib/api";
 import { TComment } from "@/types/comment.type";
@@ -11,19 +12,39 @@ interface WatchPageProps {
   }>;
 }
 
+interface WatchHistoryProgress {
+  watchedSeconds: number;
+  durationSeconds: number | null;
+  completed: boolean;
+}
+
 export default async function WatchPage({ params }: WatchPageProps) {
   const { id } = await params;
 
   let videoData: TVideo | null = null;
+  let watchHistory: WatchHistoryProgress | null = null;
   let errorMsg: string | null = null;
 
   try {
     videoData = await fetchFromBackend<TVideo>(`/videos/${id}`, {
-      next: { revalidate: 60 },
+      next: {
+        revalidate: 60,
+      },
     });
-  } catch (err: any) {
+
+    try {
+      watchHistory = await fetchFromBackend<WatchHistoryProgress | null>(
+        `/history/${id}`
+      );
+    } catch (error) {
+      // History should never prevent the video from loading.
+      console.error("Error fetching watch history:", error);
+    }
+  } catch (err: unknown) {
     console.error("Error fetching video details:", err);
-    errorMsg = err.message || "Connection error to server";
+
+    errorMsg =
+      err instanceof Error ? err.message : "Connection error to server";
   }
 
   const views = videoData?.viewCount
@@ -40,18 +61,13 @@ export default async function WatchPage({ params }: WatchPageProps) {
         {/* VIDEO + DETAILS */}
         <section className="min-w-0 lg:col-span-2">
           {/* Video */}
-          <div className="w-full overflow-hidden bg-black">
-            <div className="aspect-16/10 w-full sm:aspect-video">
-              <iframe
-                className="block h-full w-full border-0"
-                src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`}
-                title={videoData?.title || "YouTube video player"}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            </div>
-          </div>
+          <VideoPlayer
+            videoId={id}
+            title={videoData?.title || "YouTube video player"}
+            initialPosition={
+              watchHistory?.completed ? 0 : watchHistory?.watchedSeconds ?? 0
+            }
+          />
 
           {/* Details */}
           <div className="px-4 sm:px-6 lg:px-0">

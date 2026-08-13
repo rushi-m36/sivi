@@ -10,6 +10,7 @@ import { CacheModule } from './cache/cache.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { HealthModule } from './health/health.module';
 import { TrendingModule } from './trending/trending.module';
+import { HistoryModule } from './history/history.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -26,6 +27,7 @@ import configuration from './config/configuration';
     YoutubeModule,
     HealthModule,
     TrendingModule,
+    HistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

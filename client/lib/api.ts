@@ -42,7 +42,6 @@ async function getClerkToken(): Promise<string | null> {
 
   return null;
 }
-
 export async function fetchFromBackend<T>(
   endpoint: string,
   options: FetchOptions = {}
@@ -50,6 +49,7 @@ export async function fetchFromBackend<T>(
   const formattedEndpoint = endpoint.startsWith("/")
     ? endpoint
     : `/${endpoint}`;
+
   const url = `${API_BASE_URL}${formattedEndpoint}`;
 
   const headers = new Headers(options.headers);
@@ -58,9 +58,9 @@ export async function fetchFromBackend<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  // Automatically attach the Authorization header if not manually provided
   if (!headers.has("Authorization")) {
     const token = await getClerkToken();
+
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -73,8 +73,10 @@ export async function fetchFromBackend<T>(
 
   if (!response.ok) {
     let errorMessage = `Failed to load details (Status ${response.status})`;
+
     try {
       const errorData = await response.json();
+
       if (errorData?.message) {
         errorMessage = Array.isArray(errorData.message)
           ? errorData.message.join(", ")
@@ -83,12 +85,21 @@ export async function fetchFromBackend<T>(
     } catch {
       // Keep default status error if not JSON
     }
+
     throw new Error(errorMessage);
   }
 
+  // No content
   if (response.status === 204) {
-    return {} as T;
+    return null as T;
   }
 
-  return response.json();
+  const text = await response.text();
+
+  // Empty response body
+  if (!text.trim()) {
+    return null as T;
+  }
+
+  return JSON.parse(text) as T;
 }
