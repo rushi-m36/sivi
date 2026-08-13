@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Library } from "lucide-react";
+import { Home, History } from "lucide-react";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
@@ -22,10 +22,10 @@ const tabs: Tab[] = [
     icon: Home,
   },
   {
-    id: "subscriptions",
-    label: "Subscriptions",
-    href: "/subscriptions",
-    icon: Library,
+    id: "history",
+    label: "History",
+    href: "/history",
+    icon: History,
   },
 ];
 
