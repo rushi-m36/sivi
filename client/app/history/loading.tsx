@@ -8,6 +8,8 @@ export default function HistoryLoading() {
             <div className="h-5 w-5 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
 
             <div className="h-6 w-32 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
+
+            <div className="h-4 w-8 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
           </div>
 
           <div className="h-4 w-14 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
@@ -26,13 +28,17 @@ export default function HistoryLoading() {
               {/* Details */}
               <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
                 <div className="space-y-3">
+                  {/* Title */}
                   <div className="h-4 w-full max-w-xl animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
 
+                  {/* Second title line */}
                   <div className="h-4 w-2/3 max-w-md animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
 
+                  {/* Channel */}
                   <div className="h-3 w-28 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
                 </div>
 
+                {/* Metadata */}
                 <div className="mt-5 space-y-2">
                   <div className="h-3 w-40 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800" />
 
