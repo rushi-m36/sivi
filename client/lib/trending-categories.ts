@@ -24,22 +24,10 @@ export const categories = [
     icon: Film,
   },
   {
-    id: "2",
-    slug: "autos-vehicles",
-    name: "Autos & Vehicles",
-    icon: Car,
-  },
-  {
     id: "10",
     slug: "music",
     name: "Music",
     icon: Music2,
-  },
-  {
-    id: "15",
-    slug: "pets-animals",
-    name: "Pets & Animals",
-    icon: PawPrint,
   },
   {
     id: "17",
@@ -47,64 +35,25 @@ export const categories = [
     name: "Sports",
     icon: Trophy,
   },
-  {
-    id: "19",
-    slug: "travel-events",
-    name: "Travel & Events",
-    icon: Plane,
-  },
+
   {
     id: "20",
     slug: "gaming",
     name: "Gaming",
     icon: Gamepad2,
   },
-  {
-    id: "22",
-    slug: "people-blogs",
-    name: "People & Blogs",
-    icon: User,
-  },
-  {
-    id: "23",
-    slug: "comedy",
-    name: "Comedy",
-    icon: Laugh,
-  },
-  {
-    id: "24",
-    slug: "entertainment",
-    name: "Entertainment",
-    icon: Clapperboard,
-  },
+
   {
     id: "25",
     slug: "news-politics",
     name: "News & Politics",
     icon: Newspaper,
   },
-  {
-    id: "26",
-    slug: "howto-style",
-    name: "Howto & Style",
-    icon: Wrench,
-  },
-  {
-    id: "27",
-    slug: "education",
-    name: "Education",
-    icon: GraduationCap,
-  },
+
   {
     id: "28",
     slug: "science-technology",
     name: "Science & Technology",
     icon: FlaskConical,
-  },
-  {
-    id: "29",
-    slug: "nonprofits-activism",
-    name: "Nonprofits & Activism",
-    icon: HeartHandshake,
   },
 ];
