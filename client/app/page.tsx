@@ -1,94 +1,50 @@
-import { auth } from "@clerk/nextjs/server";
+import { Suspense } from "react";
 
-import { fetchFromBackend } from "@/lib/api";
-import { TChannel } from "@/types/channel.type";
-import { TVideo } from "@/types/video.type";
-import VideoGrid from "@/components/video/VideoGrid";
-import { SubChannelCard } from "@/components/channel/SubChannelCard";
 import { Categories } from "@/components/layout/Categories";
+import Subscriptions from "@/components/layout/Subscriptions";
 
-interface SubscriptionsResponse {
-  channels: TChannel[];
-  recentVideos: TVideo[];
+function SubscriptionsSkeleton() {
+  return (
+    <section className="border-t border-zinc-200 py-8 dark:border-zinc-800 sm:py-10">
+      <div className="mb-5">
+        <div className="h-6 w-40 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div className="mt-2 h-4 w-64 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+      </div>
+
+      <div className="flex gap-6 overflow-hidden pb-2">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-24 w-24 shrink-0 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800"
+          />
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <div className="mb-5 h-5 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-52 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800"
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
-export default async function Home() {
-  const { userId } = await auth();
-
-  let subscriptions: SubscriptionsResponse = {
-    channels: [],
-    recentVideos: [],
-  };
-
-  if (userId) {
-    try {
-      subscriptions = await fetchFromBackend<SubscriptionsResponse>(
-        "/subscriptions",
-        {
-          cache: "no-store",
-        }
-      );
-    } catch (error) {
-      console.error("Failed to load subscriptions:", error);
-    }
-  }
-
-  const { channels, recentVideos } = subscriptions;
-
+export default function Home() {
   return (
     <main className="min-h-screen">
       <div className="mx-auto w-full max-w-6xl px-1 sm:px-0">
         <Categories />
 
-        <section className="border-t border-zinc-200 py-8 dark:border-zinc-800 sm:py-10">
-          <div className="mb-5">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
-              Subscriptions
-            </h2>
-
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              Latest from channels you follow
-            </p>
-          </div>
-
-          {!userId ? (
-            <div className="rounded-xl border border-zinc-200 py-10 text-center dark:border-zinc-800">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Sign in to see your subscriptions.
-              </p>
-            </div>
-          ) : channels.length === 0 ? (
-            <div className="rounded-xl border border-zinc-200 py-10 text-center dark:border-zinc-800">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                No subscriptions yet
-              </p>
-
-              <p className="mt-1 text-sm text-zinc-500">
-                Subscribe to channels to see their videos here.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="mb-8 flex gap-6 overflow-x-auto pb-2 scrollbar-hide">
-                {channels.slice(0, 10).map((channel) => {
-                  const channelId = channel.channelId || (channel as any).id;
-
-                  return <SubChannelCard key={channelId} {...channel} />;
-                })}
-              </div>
-
-              {recentVideos.length > 0 && (
-                <div>
-                  <h3 className="mb-5 text-lg font-medium text-zinc-900 dark:text-white">
-                    Latest videos
-                  </h3>
-
-                  <VideoGrid videos={recentVideos.slice(0, 12)} />
-                </div>
-              )}
-            </>
-          )}
-        </section>
+        <Suspense fallback={<SubscriptionsSkeleton />}>
+          <Subscriptions />
+        </Suspense>
       </div>
     </main>
   );
