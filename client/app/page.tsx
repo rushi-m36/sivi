@@ -37,7 +37,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl px-1 sm:px-0">
         <Categories />
 
         <section className="border-t border-zinc-200 py-8 dark:border-zinc-800 sm:py-10">
