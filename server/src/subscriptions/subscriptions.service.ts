@@ -15,16 +15,50 @@ export interface YouTubeChannel {
   channelTitle: string;
   channelAvatar?: string;
   subscriberCount: number;
+
+  /**
+   * YouTube uploads playlist used to retrieve
+   * the latest uploaded video.
+   */
+  uploadsPlaylistId?: string;
+
   mostRecentVideo?: {
     id: string;
   };
 }
 
+interface CachedLatestVideo {
+  videoId: string | null;
+}
+
 @Injectable()
 export class SubscriptionsService {
+  /**
+   * Complete response cache.
+   *
+   * This is intentionally kept at 120 seconds to preserve
+   * your current behavior.
+   */
   private readonly SUBSCRIPTIONS_TTL = 120;
+
+  /**
+   * Subscription status changes independently from the
+   * complete subscriptions response.
+   */
   private readonly STATUS_TTL = 60;
+
+  /**
+   * Channel metadata changes relatively slowly.
+   */
   private readonly CHANNEL_TTL = 600;
+
+  /**
+   * Latest uploaded video is cached separately.
+   *
+   * This prevents every subscriptions-cache miss from having
+   * to call playlistItems.list for every channel.
+   */
+  private readonly LATEST_VIDEO_TTL = 120;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -38,7 +72,10 @@ export class SubscriptionsService {
   }> {
     const cacheKey = `subscriptions:user:${userId}`;
 
-    // 1. Check Redis
+    // ---------------------------------------------------------
+    // 1. Complete response cache
+    // ---------------------------------------------------------
+
     const cached = await this.redisService.get<{
       channels: YouTubeChannel[];
       recentVideos: TVideo[];
@@ -48,7 +85,10 @@ export class SubscriptionsService {
       return cached;
     }
 
-    // 2. Get subscriptions from PostgreSQL
+    // ---------------------------------------------------------
+    // 2. PostgreSQL
+    // ---------------------------------------------------------
+
     const subscriptions = await this.prisma.subscription.findMany({
       where: {
         userId,
@@ -77,49 +117,50 @@ export class SubscriptionsService {
       (subscription) => subscription.channelId,
     );
 
-    // 3. Get channel details
+    // ---------------------------------------------------------
+    // 3. Channel information
+    // ---------------------------------------------------------
+
     const channels = await this.getChannelDetails(channelIds);
 
-    // 4. Get latest video from each channel
-    const latestVideoIds = (
-      await Promise.all(
-        channels.map(async (channel) => {
-          const channelData = await this.youtubeService.getChannel(
-            channel.channelId,
-          );
+    // ---------------------------------------------------------
+    // 4. Latest video ID for each channel
+    // ---------------------------------------------------------
 
-          const uploadsPlaylistId =
-            channelData?.contentDetails?.relatedPlaylists?.uploads;
+    const latestVideoIds = await this.getLatestVideoIds(channels);
 
-          if (!uploadsPlaylistId) {
-            return null;
-          }
+    if (latestVideoIds.length === 0) {
+      const response = {
+        channels,
+        recentVideos: [],
+      };
 
-          const playlistResponse = await this.youtubeService.getPlaylistItems(
-            uploadsPlaylistId,
-            1,
-          );
+      await this.redisService.set(cacheKey, response, this.SUBSCRIPTIONS_TTL);
 
-          return (
-            playlistResponse.data.items?.[0]?.contentDetails?.videoId ?? null
-          );
-        }),
-      )
-    ).filter((videoId): videoId is string => videoId !== null);
+      return response;
+    }
 
-    // 5. Get complete video data
-    const videos = (
-      await Promise.all(
-        latestVideoIds.map((videoId) => this.youtubeService.getVideo(videoId)),
-      )
-    ).filter((video): video is youtube_v3.Schema$Video => video !== null);
+    // ---------------------------------------------------------
+    // 5. Get complete video data in ONE batched request
+    // ---------------------------------------------------------
 
-    // 6. Convert YouTube response to application type
+    const videosResponse = await this.youtubeService.getVideos(latestVideoIds);
+
+    const videos = videosResponse?.data.items ?? [];
+
+    // ---------------------------------------------------------
+    // 6. Build application response
+    // ---------------------------------------------------------
+
+    const channelMap = new Map(
+      channels.map((channel) => [channel.channelId, channel]),
+    );
+
     const recentVideos: TVideo[] = videos
       .map((video) => {
-        const channel = channels.find(
-          (channel) => channel.channelId === video.snippet?.channelId,
-        );
+        const channelId = video.snippet?.channelId ?? '';
+
+        const channel = channelMap.get(channelId);
 
         return {
           id: video.id ?? '',
@@ -133,7 +174,7 @@ export class SubscriptionsService {
             '',
 
           channel: {
-            channelId: video.snippet?.channelId ?? '',
+            channelId,
             channelTitle: video.snippet?.channelTitle ?? '',
             channelAvatar: channel?.channelAvatar ?? '',
             subscriberCount: channel?.subscriberCount ?? null,
@@ -162,7 +203,10 @@ export class SubscriptionsService {
       recentVideos,
     };
 
+    // ---------------------------------------------------------
     // 7. Cache final response
+    // ---------------------------------------------------------
+
     await this.redisService.set(cacheKey, response, this.SUBSCRIPTIONS_TTL);
 
     return response;
@@ -174,14 +218,14 @@ export class SubscriptionsService {
   ): Promise<boolean> {
     const cacheKey = `subscription:status:${userId}:${channelId}`;
 
-    // 1. Check Redis
+    // Redis
     const cached = await this.redisService.get<boolean>(cacheKey);
 
     if (cached !== null) {
       return cached;
     }
 
-    // 2. Check PostgreSQL
+    // PostgreSQL
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         userId,
@@ -194,7 +238,7 @@ export class SubscriptionsService {
 
     const isSubscribed = !!subscription;
 
-    // 3. Cache status
+    // Cache
     await this.redisService.set(cacheKey, isSubscribed, this.STATUS_TTL);
 
     return isSubscribed;
@@ -226,9 +270,10 @@ export class SubscriptionsService {
       },
     });
 
-    // Invalidate affected caches
+    // Invalidate both affected caches.
     await Promise.all([
       this.redisService.delete(`subscriptions:user:${userId}`),
+
       this.redisService.delete(`subscription:status:${userId}:${channelId}`),
     ]);
 
@@ -260,73 +305,181 @@ export class SubscriptionsService {
       },
     });
 
-    // Invalidate affected caches
+    // Invalidate both affected caches.
     await Promise.all([
       this.redisService.delete(`subscriptions:user:${userId}`),
+
       this.redisService.delete(`subscription:status:${userId}:${channelId}`),
     ]);
 
     return deletedSubscription;
   }
 
+  /**
+   * Gets channel information from Redis first.
+   *
+   * Uses one MGET instead of one GET per channel.
+   */
   private async getChannelDetails(
     channelIds: string[],
   ): Promise<YouTubeChannel[]> {
     const uniqueChannelIds = [...new Set(channelIds)];
 
+    if (uniqueChannelIds.length === 0) {
+      return [];
+    }
+
+    // ---------------------------------------------------------
+    // Redis MGET
+    // ---------------------------------------------------------
+
+    const cacheKeys = uniqueChannelIds.map(
+      (channelId) => `youtube:channel:${channelId}`,
+    );
+
+    const cachedResults =
+      await this.redisService.getMany<YouTubeChannel>(cacheKeys);
+
     const cachedChannels: YouTubeChannel[] = [];
     const missingChannelIds: string[] = [];
 
-    // Check Redis for every channel
-    const cachedResults = await Promise.all(
-      uniqueChannelIds.map(async (channelId) => {
-        const cacheKey = `youtube:channel:${channelId}`;
+    uniqueChannelIds.forEach((channelId, index) => {
+      const cached = cachedResults[index];
 
-        const cached = await this.redisService.get<YouTubeChannel>(cacheKey);
-
-        return {
-          channelId,
-          cached,
-        };
-      }),
-    );
-
-    // Separate cache hits and misses
-    for (const result of cachedResults) {
-      if (result.cached) {
-        cachedChannels.push(result.cached);
+      if (cached) {
+        cachedChannels.push(cached);
       } else {
-        missingChannelIds.push(result.channelId);
+        missingChannelIds.push(channelId);
       }
-    }
+    });
 
-    // Everything was cached
+    // Everything is already cached.
     if (missingChannelIds.length === 0) {
       return this.orderChannels(uniqueChannelIds, cachedChannels);
     }
 
-    // YouTube supports up to 50 channel IDs
-    // per channels.list request
+    // ---------------------------------------------------------
+    // YouTube batch request
+    // ---------------------------------------------------------
+
     const chunks = this.chunkArray(missingChannelIds, 50);
 
     const freshChannels = (
       await Promise.all(chunks.map((chunk) => this.fetchYouTubeChannels(chunk)))
     ).flat();
 
+    // ---------------------------------------------------------
     // Cache newly fetched channels
-    await Promise.all(
-      freshChannels.map((channel) =>
-        this.redisService.set(
-          `youtube:channel:${channel.channelId}`,
-          channel,
-          this.CHANNEL_TTL,
-        ),
-      ),
+    // ---------------------------------------------------------
+
+    await this.redisService.setMany(
+      freshChannels.map((channel) => ({
+        key: `youtube:channel:${channel.channelId}`,
+        value: channel,
+        ttlSeconds: this.CHANNEL_TTL,
+      })),
     );
 
     const allChannels = [...cachedChannels, ...freshChannels];
 
     return this.orderChannels(uniqueChannelIds, allChannels);
+  }
+
+  /**
+   * Gets the latest video for each subscribed channel.
+   *
+   * Latest video IDs are cached independently from the complete
+   * subscriptions response.
+   */
+  private async getLatestVideoIds(
+    channels: YouTubeChannel[],
+  ): Promise<string[]> {
+    if (channels.length === 0) {
+      return [];
+    }
+
+    const cacheKeys = channels.map(
+      (channel) => `youtube:latest-video:${channel.channelId}`,
+    );
+
+    const cachedResults =
+      await this.redisService.getMany<CachedLatestVideo>(cacheKeys);
+
+    const latestVideoIds: string[] = [];
+    const missingChannels: YouTubeChannel[] = [];
+
+    channels.forEach((channel, index) => {
+      const cached = cachedResults[index];
+
+      if (cached?.videoId) {
+        latestVideoIds.push(cached.videoId);
+      } else {
+        missingChannels.push(channel);
+      }
+    });
+
+    if (missingChannels.length === 0) {
+      return [...new Set(latestVideoIds)];
+    }
+
+    const freshResults = await Promise.all(
+      missingChannels.map(async (channel) => {
+        if (!channel.uploadsPlaylistId) {
+          return {
+            channelId: channel.channelId,
+            videoId: null,
+          };
+        }
+
+        const playlistResponse = await this.youtubeService.getPlaylistItems(
+          channel.uploadsPlaylistId,
+          1,
+        );
+
+        return {
+          channelId: channel.channelId,
+          videoId:
+            playlistResponse.data.items?.[0]?.contentDetails?.videoId ?? null,
+        };
+      }),
+    );
+
+    await this.redisService.setMany(
+      freshResults.map((result) => ({
+        key: `youtube:latest-video:${result.channelId}`,
+        value: {
+          videoId: result.videoId,
+        },
+        ttlSeconds: this.LATEST_VIDEO_TTL,
+      })),
+    );
+
+    for (const result of freshResults) {
+      if (result.videoId) {
+        latestVideoIds.push(result.videoId);
+      }
+    }
+
+    return [...new Set(latestVideoIds)];
+  }
+  /**
+   * Gets the uploads playlist ID.
+   *
+   * This uses the channel cache populated by getChannelDetails().
+   *
+   * The current YouTubeChannel application type doesn't expose
+   * uploadsPlaylistId, so we make a single channel request only
+   * when it is required.
+   *
+   * This method is intentionally isolated so it can later be
+   * removed when uploadsPlaylistId is added to the channel cache.
+   */
+  private async getUploadsPlaylistId(
+    channelId: string,
+  ): Promise<string | null> {
+    const channelData = await this.youtubeService.getChannel(channelId);
+
+    return channelData?.contentDetails?.relatedPlaylists?.uploads ?? null;
   }
 
   private async fetchYouTubeChannels(
@@ -342,12 +495,19 @@ export class SubscriptionsService {
       response?.data.items?.map((item) => ({
         id: item.id ?? '',
         channelId: item.id ?? '',
+
         channelTitle: item.snippet?.title ?? '',
+
         channelAvatar:
           item.snippet?.thumbnails?.medium?.url ||
           item.snippet?.thumbnails?.default?.url ||
           '/default-avatar.png',
+
         subscriberCount: Number(item.statistics?.subscriberCount) || 0,
+
+        uploadsPlaylistId: item.contentDetails?.relatedPlaylists?.uploads,
+
+        mostRecentVideo: undefined,
       })) ?? []
     );
   }

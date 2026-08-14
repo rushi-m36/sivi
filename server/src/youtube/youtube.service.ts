@@ -50,7 +50,7 @@ export class YoutubeService {
     }
 
     return this.youtube.channels.list({
-      part: ['snippet', 'statistics'],
+      part: ['snippet', 'statistics', 'contentDetails'],
       id: channelIds,
     });
   }
@@ -64,7 +64,7 @@ export class YoutubeService {
     return response.data.items?.[0] ?? null;
   }
 
-  async getComments(videoId: string, maxResults) {
+  async getComments(videoId: string, maxResults: number) {
     return this.youtube.commentThreads.list({
       part: ['snippet'],
       videoId,
@@ -88,7 +88,7 @@ export class YoutubeService {
     });
   }
 
-  async getPlaylistItems(playlistId: string, maxResults) {
+  async getPlaylistItems(playlistId: string, maxResults: number) {
     return this.youtube.playlistItems.list({
       part: ['snippet', 'contentDetails'],
       playlistId,
