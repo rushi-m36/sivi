@@ -73,16 +73,18 @@ export class YoutubeService {
   }
 
   async getTrendingVideos(
-    regionCode = 'IN',
+    regionCode: string,
     categoryId?: string,
     maxResults = 20,
+    pageToken?: string,
   ) {
     return this.youtube.videos.list({
       part: ['snippet', 'contentDetails', 'statistics'],
       chart: 'mostPopular',
       regionCode,
+      videoCategoryId: categoryId,
       maxResults,
-      ...(categoryId ? { videoCategoryId: categoryId } : {}),
+      pageToken,
     });
   }
 
