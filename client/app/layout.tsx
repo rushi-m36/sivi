@@ -1,4 +1,5 @@
 import React from "react";
+import { Analytics } from "@vercel/analytics/next";
 import NextTopLoader from "nextjs-toploader";
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
