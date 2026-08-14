@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '../cache/redis.service';
 import { YoutubeService } from '../youtube/youtube.service';
+import { TChannelSummary, TVideo } from '@/videos/types/video.type';
 
 @Injectable()
 export class TrendingService {
   private readonly CACHE_TTL = 300; // 5 minutes
   private readonly MIN_DURATION_SECONDS = 120;
+  private readonly YOUTUBE_MAX_RESULTS = 50;
+
+  private readonly inFlightRequests = new Map<string, Promise<TVideo[]>>();
 
   constructor(
     private readonly youtubeService: YoutubeService,
@@ -16,28 +20,57 @@ export class TrendingService {
     regionCode = 'IN',
     categoryId?: string,
     maxResults = 20,
-  ) {
-    const cacheKey = this.buildCacheKey(regionCode, categoryId, maxResults);
+  ): Promise<TVideo[]> {
+    const normalizedRegion = regionCode.toUpperCase();
 
-    const cached = await this.redisService.get(cacheKey);
+    const cacheKey = this.buildCacheKey(
+      normalizedRegion,
+      categoryId,
+      maxResults,
+    );
 
-    if (cached) {
+    const cached = (await this.redisService.get(cacheKey)) as TVideo[] | null;
+
+    if (cached && cached.length > 0) {
       return cached;
     }
 
+    const existingRequest = this.inFlightRequests.get(cacheKey);
+
+    if (existingRequest) {
+      return existingRequest;
+    }
+
+    const request = this.fetchAndCacheTrendingVideos(
+      normalizedRegion,
+      categoryId,
+      maxResults,
+      cacheKey,
+    );
+
+    this.inFlightRequests.set(cacheKey, request);
+
+    try {
+      return await request;
+    } finally {
+      this.inFlightRequests.delete(cacheKey);
+    }
+  }
+
+  private async fetchAndCacheTrendingVideos(
+    regionCode: string,
+    categoryId: string | undefined,
+    maxResults: number,
+    cacheKey: string,
+  ): Promise<TVideo[]> {
     const videos: any[] = [];
     let pageToken: string | undefined;
 
     while (videos.length < maxResults) {
-      const remaining = maxResults - videos.length;
-
-      // YouTube API allows a maximum of 50 per request.
-      const fetchCount = Math.min(remaining + 10, 50);
-
       const response = await this.youtubeService.getTrendingVideos(
         regionCode,
         categoryId,
-        fetchCount,
+        this.YOUTUBE_MAX_RESULTS,
         pageToken,
       );
 
@@ -47,15 +80,18 @@ export class TrendingService {
         break;
       }
 
-      const filteredVideos = items.filter((video) => {
+      for (const video of items) {
         const duration = this.parseDuration(video.contentDetails?.duration);
 
-        return duration > this.MIN_DURATION_SECONDS;
-      });
+        if (duration > this.MIN_DURATION_SECONDS) {
+          videos.push(video);
 
-      videos.push(...filteredVideos);
+          if (videos.length >= maxResults) {
+            break;
+          }
+        }
+      }
 
-      // No more pages available.
       pageToken = response.data.nextPageToken ?? undefined;
 
       if (!pageToken) {
@@ -63,7 +99,6 @@ export class TrendingService {
       }
     }
 
-    // Ensure we never return more than requested.
     const finalVideos = videos.slice(0, maxResults);
 
     if (finalVideos.length === 0) {
@@ -78,15 +113,20 @@ export class TrendingService {
       ),
     ];
 
-    const channelResponse = await this.youtubeService.getChannels(channelIds);
+    const channelMap = new Map<string, TChannelSummary>();
 
-    const channels = channelResponse?.data.items ?? [];
+    if (channelIds.length > 0) {
+      const channelResponse = await this.youtubeService.getChannels(channelIds);
 
-    const channelMap = new Map(
-      channels.map((channel) => [
-        channel.id,
-        {
-          channelId: channel.id ?? '',
+      const channels = channelResponse?.data.items ?? [];
+
+      for (const channel of channels) {
+        if (!channel.id) {
+          continue;
+        }
+
+        channelMap.set(channel.id, {
+          channelId: channel.id,
           channelTitle: channel.snippet?.title ?? '',
           channelAvatar:
             channel.snippet?.thumbnails?.high?.url ??
@@ -94,11 +134,11 @@ export class TrendingService {
             channel.snippet?.thumbnails?.default?.url ??
             '',
           subscriberCount: channel.statistics?.subscriberCount ?? null,
-        },
-      ]),
-    );
+        });
+      }
+    }
 
-    const result = finalVideos.map((video) => {
+    const result: TVideo[] = finalVideos.map((video) => {
       const channelId = video.snippet?.channelId ?? '';
 
       return {

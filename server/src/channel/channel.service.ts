@@ -16,6 +16,12 @@ export class ChannelService {
 
   private readonly CACHE_TTL = 60 * 30;
 
+  /**
+   * Prevents multiple identical requests from simultaneously
+   * hitting Redis/YouTube when the cache is cold.
+   */
+  private readonly pendingRequests = new Map<string, Promise<TChannel>>();
+
   constructor(
     private readonly redisService: RedisService,
     private readonly youtubeService: YoutubeService,
@@ -30,7 +36,29 @@ export class ChannelService {
 
     const cacheKey = this.getCacheKey(channelId);
 
-    // 1. Check Redis
+    // Prevent duplicate concurrent requests for the same channel.
+    const pendingRequest = this.pendingRequests.get(cacheKey);
+
+    if (pendingRequest) {
+      return pendingRequest;
+    }
+
+    const request = this.fetchChannel(channelId, cacheKey);
+
+    this.pendingRequests.set(cacheKey, request);
+
+    try {
+      return await request;
+    } finally {
+      this.pendingRequests.delete(cacheKey);
+    }
+  }
+
+  private async fetchChannel(
+    channelId: string,
+    cacheKey: string,
+  ): Promise<TChannel> {
+    // 1. Redis cache
     try {
       const cachedChannel = await this.redisService.get<TChannel>(cacheKey);
 
@@ -39,13 +67,11 @@ export class ChannelService {
       }
     } catch (error) {
       this.logger.warn(
-        `Redis GET failed for ${cacheKey}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        `Redis GET failed for ${cacheKey}: ${this.getErrorMessage(error)}`,
       );
     }
 
-    // 2. Fetch channel from centralized YoutubeService
+    // 2. Fetch channel metadata
     const channel = await this.youtubeService.getChannel(channelId);
 
     if (!channel) {
@@ -55,8 +81,6 @@ export class ChannelService {
     const snippet = channel.snippet;
     const statistics = channel.statistics;
 
-    const uploadsPlaylistId = channel.contentDetails?.relatedPlaylists?.uploads;
-
     const channelTitle = snippet?.title || '';
 
     const channelAvatar =
@@ -65,9 +89,11 @@ export class ChannelService {
       snippet?.thumbnails?.default?.url ||
       '/default-avatar.png';
 
-    // 3. Fetch latest videos
+    const uploadsPlaylistId = channel.contentDetails?.relatedPlaylists?.uploads;
+
     let videos: TVideo[] = [];
 
+    // 3. Fetch latest videos
     if (uploadsPlaylistId) {
       const videosResponse = await this.youtubeService.getPlaylistItems(
         uploadsPlaylistId,
@@ -76,68 +102,77 @@ export class ChannelService {
 
       const playlistItems = videosResponse.data.items || [];
 
-      // Extract video IDs
-      const videoIds = playlistItems
-        .map((item) => item.snippet?.resourceId?.videoId)
-        .filter((id): id is string => Boolean(id));
+      if (playlistItems.length > 0) {
+        const videoIds: string[] = [];
 
-      if (videoIds.length > 0) {
-        // Fetch video details including duration and statistics
-        const videoDetailsResponse =
-          await this.youtubeService.getVideos(videoIds);
+        for (const item of playlistItems) {
+          const videoId = item.snippet?.resourceId?.videoId;
 
-        const videoDetails = videoDetailsResponse?.data.items || [];
+          if (videoId) {
+            videoIds.push(videoId);
+          }
+        }
 
-        // Create lookup map: videoId -> video details
-        const videoDetailsMap = new Map(
-          videoDetails.map((video) => [
-            video.id,
+        if (videoIds.length > 0) {
+          const videoDetailsResponse =
+            await this.youtubeService.getVideos(videoIds);
+
+          const videoDetails = videoDetailsResponse?.data.items || [];
+
+          const videoDetailsMap = new Map<
+            string,
             {
+              duration: string;
+              viewCount: string | null;
+              likeCount: string | null;
+              commentCount: string | null;
+            }
+          >();
+
+          for (const video of videoDetails) {
+            if (!video.id) {
+              continue;
+            }
+
+            videoDetailsMap.set(video.id, {
               duration: video.contentDetails?.duration || '',
               viewCount: video.statistics?.viewCount || null,
               likeCount: video.statistics?.likeCount || null,
               commentCount: video.statistics?.commentCount || null,
-            },
-          ]),
-        );
-
-        videos = playlistItems.reduce<TVideo[]>((result, item) => {
-          const videoId = item.snippet?.resourceId?.videoId;
-
-          if (!videoId) {
-            return result;
+            });
           }
 
-          const details = videoDetailsMap.get(videoId);
+          videos = [];
 
-          result.push({
-            id: videoId,
+          for (const item of playlistItems) {
+            const videoId = item.snippet?.resourceId?.videoId;
 
-            title: item.snippet?.title || '',
+            if (!videoId) {
+              continue;
+            }
 
-            thumbnailUrl:
-              item.snippet?.thumbnails?.high?.url ||
-              item.snippet?.thumbnails?.medium?.url ||
-              item.snippet?.thumbnails?.default?.url ||
-              '',
+            const details = videoDetailsMap.get(videoId);
 
-            publishedAt: item.snippet?.publishedAt || '',
-
-            duration: details?.duration || '',
-
-            viewCount: details?.viewCount || null,
-
-            likeCount: details?.likeCount || null,
-
-            channel: {
-              channelId,
-              channelTitle,
-              channelAvatar,
-            },
-          });
-
-          return result;
-        }, []);
+            videos.push({
+              id: videoId,
+              title: item.snippet?.title || '',
+              thumbnailUrl:
+                item.snippet?.thumbnails?.high?.url ||
+                item.snippet?.thumbnails?.medium?.url ||
+                item.snippet?.thumbnails?.default?.url ||
+                '',
+              publishedAt: item.snippet?.publishedAt || '',
+              duration: details?.duration || '',
+              viewCount: details?.viewCount || null,
+              likeCount: details?.likeCount || null,
+              channel: {
+                channelId,
+                channelTitle,
+                channelAvatar,
+              },
+            });
+          }
+        }
       }
     }
 
@@ -150,14 +185,12 @@ export class ChannelService {
       videos,
     };
 
-    // 5. Cache
+    // 5. Cache complete channel response
     try {
       await this.redisService.set(cacheKey, result, this.CACHE_TTL);
     } catch (error) {
       this.logger.warn(
-        `Redis SET failed for ${cacheKey}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        `Redis SET failed for ${cacheKey}: ${this.getErrorMessage(error)}`,
       );
     }
 
@@ -166,5 +199,9 @@ export class ChannelService {
 
   private getCacheKey(channelId: string): string {
     return `channel:${channelId}`;
+  }
+
+  private getErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
   }
 }

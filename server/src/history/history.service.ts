@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import { YoutubeService } from '../youtube/youtube.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,7 +9,18 @@ import { THistoryVideo } from './history-video.type';
 
 @Injectable()
 export class HistoryService {
+  private readonly logger = new Logger(HistoryService.name);
+
   private readonly HISTORY_CACHE_TTL = 60;
+
+  /**
+   * Prevents multiple simultaneous requests for the same user's history
+   * from hitting PostgreSQL and YouTube at the same time.
+   */
+  private readonly pendingHistoryRequests = new Map<
+    string,
+    Promise<THistoryVideo[]>
+  >();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -57,11 +68,7 @@ export class HistoryService {
       },
     });
 
-    // Invalidate both caches.
-    await Promise.all([
-      this.redis.delete(this.getHistoryCacheKey(userId)),
-      this.redis.delete(this.getProgressCacheKey(userId, videoId)),
-    ]);
+    await this.invalidateHistoryCaches(userId, videoId);
 
     return history;
   }
@@ -69,10 +76,14 @@ export class HistoryService {
   async getProgress(userId: string, videoId: string) {
     const cacheKey = this.getProgressCacheKey(userId, videoId);
 
-    const cached = await this.redis.get(cacheKey);
+    try {
+      const cached = await this.redis.get(cacheKey);
 
-    if (cached) {
-      return cached;
+      if (cached) {
+        return cached;
+      }
+    } catch (error) {
+      this.logRedisError('GET', cacheKey, error);
     }
 
     const history = await this.prisma.watchHistory.findUnique({
@@ -85,7 +96,11 @@ export class HistoryService {
     });
 
     if (history) {
-      await this.redis.set(cacheKey, history, this.HISTORY_CACHE_TTL);
+      try {
+        await this.redis.set(cacheKey, history, this.HISTORY_CACHE_TTL);
+      } catch (error) {
+        this.logRedisError('SET', cacheKey, error);
+      }
     }
 
     return history;
@@ -94,14 +109,39 @@ export class HistoryService {
   async getHistory(userId: string): Promise<THistoryVideo[]> {
     const cacheKey = this.getHistoryCacheKey(userId);
 
-    // 1. Check Redis
-    const cached = await this.redis.get<THistoryVideo[]>(cacheKey);
+    const pendingRequest = this.pendingHistoryRequests.get(userId);
 
-    if (cached) {
-      return cached;
+    if (pendingRequest) {
+      return pendingRequest;
     }
 
-    // 2. Get history from PostgreSQL
+    const request = this.fetchHistory(userId, cacheKey);
+
+    this.pendingHistoryRequests.set(userId, request);
+
+    try {
+      return await request;
+    } finally {
+      this.pendingHistoryRequests.delete(userId);
+    }
+  }
+
+  private async fetchHistory(
+    userId: string,
+    cacheKey: string,
+  ): Promise<THistoryVideo[]> {
+    // 1. Redis cache
+    try {
+      const cached = await this.redis.get<THistoryVideo[]>(cacheKey);
+
+      if (cached) {
+        return cached;
+      }
+    } catch (error) {
+      this.logRedisError('GET', cacheKey, error);
+    }
+
+    // 2. PostgreSQL
     const history = await this.prisma.watchHistory.findMany({
       where: {
         userId,
@@ -115,15 +155,19 @@ export class HistoryService {
       return [];
     }
 
-    // 3. Get YouTube video IDs
+    // 3. Extract video IDs
     const videoIds = history.map((item) => item.videoId);
 
-    // 4. Get video information from YouTube
+    // 4. Fetch video information
     const response = await this.youtubeService.getVideos(videoIds);
 
     const videos = response?.data.items ?? [];
 
-    // 5. Get unique channel IDs
+    if (videos.length === 0) {
+      return [];
+    }
+
+    // 5. Extract unique channel IDs
     const channelIds = [
       ...new Set(
         videos
@@ -132,80 +176,96 @@ export class HistoryService {
       ),
     ];
 
-    // 6. Get channel information
-    const channelResponse = await this.youtubeService.getChannels(channelIds);
+    // 6. Fetch channels only when there are channels to fetch
+    const channels =
+      channelIds.length > 0
+        ? ((await this.youtubeService.getChannels(channelIds))?.data.items ??
+          [])
+        : [];
 
-    const channels = channelResponse?.data.items ?? [];
+    // 7. Create channel lookup map
+    const channelMap = new Map<
+      string,
+      {
+        channelAvatar: string;
+        subscriberCount: number | null;
+      }
+    >();
 
-    const channelMap = new Map(
-      channels.map((channel) => [
-        channel.id,
-        {
-          channelAvatar:
-            channel.snippet?.thumbnails?.high?.url ??
-            channel.snippet?.thumbnails?.medium?.url ??
-            channel.snippet?.thumbnails?.default?.url ??
-            '',
+    for (const channel of channels) {
+      if (!channel.id) {
+        continue;
+      }
 
-          subscriberCount: channel.statistics?.subscriberCount
-            ? Number(channel.statistics.subscriberCount)
-            : null,
+      channelMap.set(channel.id, {
+        channelAvatar:
+          channel.snippet?.thumbnails?.high?.url ??
+          channel.snippet?.thumbnails?.medium?.url ??
+          channel.snippet?.thumbnails?.default?.url ??
+          '',
+
+        subscriberCount: channel.statistics?.subscriberCount
+          ? Number(channel.statistics.subscriberCount)
+          : null,
+      });
+    }
+
+    // 8. Create video lookup map
+    const videoMap = new Map<string, THistoryVideo['video']>();
+
+    for (const video of videos) {
+      if (!video.id) {
+        continue;
+      }
+
+      const channelId = video.snippet?.channelId ?? '';
+      const channel = channelMap.get(channelId);
+
+      videoMap.set(video.id, {
+        id: video.id,
+
+        title: video.snippet?.title ?? '',
+
+        description: video.snippet?.description ?? '',
+
+        thumbnailUrl:
+          video.snippet?.thumbnails?.high?.url ??
+          video.snippet?.thumbnails?.medium?.url ??
+          video.snippet?.thumbnails?.default?.url ??
+          '',
+
+        channel: {
+          channelId,
+
+          channelTitle: video.snippet?.channelTitle ?? '',
+
+          channelAvatar: channel?.channelAvatar ?? '',
+
+          subscriberCount: channel?.subscriberCount ?? null,
         },
-      ]),
-    );
 
-    // 7. Create video map
-    const videoMap = new Map(
-      videos.map((video) => {
-        const channelId = video.snippet?.channelId ?? '';
-        const channel = channelMap.get(channelId);
+        publishedAt: video.snippet?.publishedAt ?? '',
 
-        return [
-          video.id,
-          {
-            id: video.id!,
-            title: video.snippet?.title ?? '',
+        duration: video.contentDetails?.duration ?? null,
 
-            description: video.snippet?.description ?? '',
+        viewCount: video.statistics?.viewCount ?? null,
 
-            thumbnailUrl:
-              video.snippet?.thumbnails?.high?.url ??
-              video.snippet?.thumbnails?.medium?.url ??
-              video.snippet?.thumbnails?.default?.url ??
-              '',
+        likeCount: video.statistics?.likeCount ?? null,
 
-            channel: {
-              channelId,
+        commentCount: video.statistics?.commentCount
+          ? Number(video.statistics.commentCount)
+          : undefined,
+      });
+    }
 
-              channelTitle: video.snippet?.channelTitle ?? '',
+    // 9. Combine PostgreSQL history with YouTube data
+    const result: THistoryVideo[] = [];
 
-              channelAvatar: channel?.channelAvatar ?? '',
-
-              subscriberCount: channel?.subscriberCount ?? null,
-            },
-
-            publishedAt: video.snippet?.publishedAt ?? '',
-
-            duration: video.contentDetails?.duration ?? null,
-
-            viewCount: video.statistics?.viewCount ?? null,
-
-            likeCount: video.statistics?.likeCount ?? null,
-
-            commentCount: video.statistics?.commentCount
-              ? Number(video.statistics.commentCount)
-              : undefined,
-          },
-        ];
-      }),
-    );
-
-    // 8. Combine PostgreSQL history + YouTube data
-    const result = history.reduce<THistoryVideo[]>((result, item) => {
+    for (const item of history) {
       const video = videoMap.get(item.videoId);
 
       if (!video) {
-        return result;
+        continue;
       }
 
       result.push({
@@ -219,12 +279,14 @@ export class HistoryService {
 
         lastWatchedAt: item.lastWatchedAt,
       });
+    }
 
-      return result;
-    }, []);
-
-    // 9. Cache final response
-    await this.redis.set(cacheKey, result, this.HISTORY_CACHE_TTL);
+    // 10. Cache final response
+    try {
+      await this.redis.set(cacheKey, result, this.HISTORY_CACHE_TTL);
+    } catch (error) {
+      this.logRedisError('SET', cacheKey, error);
+    }
 
     return result;
   }
@@ -252,12 +314,7 @@ export class HistoryService {
       },
     });
 
-    // Invalidate caches.
-    await Promise.all([
-      this.redis.delete(this.getHistoryCacheKey(userId)),
-
-      this.redis.delete(this.getProgressCacheKey(userId, videoId)),
-    ]);
+    await this.invalidateHistoryCaches(userId, videoId);
 
     return {
       message: 'Watch history deleted',
@@ -271,12 +328,37 @@ export class HistoryService {
       },
     });
 
-    // Clear user's history cache.
-    await this.redis.delete(this.getHistoryCacheKey(userId));
+    await this.deleteCache(this.getHistoryCacheKey(userId));
 
     return {
       message: 'Watch history cleared',
       deletedCount: result.count,
     };
+  }
+
+  private async invalidateHistoryCaches(
+    userId: string,
+    videoId: string,
+  ): Promise<void> {
+    await Promise.all([
+      this.deleteCache(this.getHistoryCacheKey(userId)),
+      this.deleteCache(this.getProgressCacheKey(userId, videoId)),
+    ]);
+  }
+
+  private async deleteCache(key: string): Promise<void> {
+    try {
+      await this.redis.delete(key);
+    } catch (error) {
+      this.logRedisError('DELETE', key, error);
+    }
+  }
+
+  private logRedisError(operation: string, key: string, error: unknown): void {
+    this.logger.warn(
+      `Redis ${operation} failed for ${key}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
 }
