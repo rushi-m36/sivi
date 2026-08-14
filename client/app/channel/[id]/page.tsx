@@ -35,6 +35,7 @@ export default async function ChannelPage({ params }: PageProps) {
     subscriberCount,
     videos,
   } = channel;
+  console.log("Avatar URL:", channelAvatar);
 
   return (
     <div className="min-h-screen bg-transparent">
