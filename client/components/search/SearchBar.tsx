@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -9,10 +9,16 @@ interface SearchBarProps {
 
 export function SearchBar({ onSearch, initialValue = "" }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!query.trim()) return;
+
+    // Close the mobile keyboard
+    inputRef.current?.blur();
+
     onSearch(query.trim());
   };
 
@@ -34,17 +40,18 @@ export function SearchBar({ onSearch, initialValue = "" }: SearchBarProps) {
         </svg>
 
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search videos..."
           autoComplete="off"
-          className="h-10 w-full border rounded-lg border-zinc-800 bg-black pl-10 pr-11 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-zinc-500"
+          className="h-10 w-full rounded-lg border border-zinc-800 bg-black pl-10 pr-11 text-sm text-white placeholder-zinc-600 outline-none transition-colors focus:border-zinc-500"
         />
 
         <button
           type="submit"
-          className="cursor-pointer absolute right-0 top-0 flex h-10 w-10 items-center justify-center border-l border-zinc-800 text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-white"
+          className="absolute right-0 top-0 flex h-10 w-10 cursor-pointer items-center justify-center border-l border-zinc-800 text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-white"
           aria-label="Search"
         >
           <svg
