@@ -5,7 +5,7 @@ import { YoutubeService } from '../youtube/youtube.service';
 @Injectable()
 export class TrendingService {
   private readonly CACHE_TTL = 300; // 5 minutes
-  private readonly MIN_DURATION_SECONDS = 60;
+  private readonly MIN_DURATION_SECONDS = 120;
 
   constructor(
     private readonly youtubeService: YoutubeService,
