@@ -1,14 +1,14 @@
-# Sivi - YouTube Client
+# Sivi - Minimilistic YouTube Alternative
 
-Sivi is a lightweight, distraction-free YouTube client designed for learners and intentional video consumption.
+Sivi is a lightweight, distraction-free YouTube alternative designed for intentional video consumption.
 
 ## Features
 
-- Search and watch YouTube videos
+- Search and watch All YouTube videos
 - No distracting home feed
 - No Shorts
 - Lightweight and minimal UI
-  & many more coming soon...
+  & many more
 
 
 ## Tech Stack
@@ -16,8 +16,9 @@ Sivi is a lightweight, distraction-free YouTube client designed for learners and
 - **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui
 - **Backend:** NestJS (REST API)
 - **Authentication:** Clerk
-- **Database:** Neon Postgres
 - **ORM:** Prisma
+- **Database:** Neon Postgres
+- **Cache**: Redis (Upstash)
 - **API Integration:** YouTube Data API v3
 
 ## Project Structure
@@ -26,26 +27,13 @@ Sivi is a lightweight, distraction-free YouTube client designed for learners and
 sivi/
 ├── client/                         # Next.js frontend
 │   ├── app/                        # Application routes
-│   │   ├── channel/
-│   │   ├── search/
-│   │   ├── subscriptions/
-│   │   └── watch/
 │   ├── components/                 # Reusable UI components
-│   │   ├── channel/
-│   │   ├── layout/
-│   │   ├── search/
-│   │   └── video/
 │   ├── lib/                        # API helpers and utilities
 │   ├── public/                     # Static assets
 │   └── types/                      # TypeScript types
 │
 ├── server/                         # NestJS backend
 │   ├── src/
-│   │   ├── auth/
-│   │   ├── channel/
-│   │   ├── config/
-│   │   ├── subscriptions/
-│   │   └── videos/
 │   ├── prisma/                     # Database schema and migrations
 │   └── test/                       # Backend tests
 │
