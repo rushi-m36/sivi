@@ -94,14 +94,14 @@ export class HistoryService {
   async getHistory(userId: string): Promise<THistoryVideo[]> {
     const cacheKey = this.getHistoryCacheKey(userId);
 
-    // 1. Check Redis.
+    // 1. Check Redis
     const cached = await this.redis.get<THistoryVideo[]>(cacheKey);
 
     if (cached) {
       return cached;
     }
 
-    // 2. Get history from PostgreSQL.
+    // 2. Get history from PostgreSQL
     const history = await this.prisma.watchHistory.findMany({
       where: {
         userId,
@@ -115,54 +115,92 @@ export class HistoryService {
       return [];
     }
 
-    // 3. Get YouTube video IDs.
+    // 3. Get YouTube video IDs
     const videoIds = history.map((item) => item.videoId);
 
-    // 4. Get video information from YouTube.
+    // 4. Get video information from YouTube
     const response = await this.youtubeService.getVideos(videoIds);
 
     const videos = response?.data.items ?? [];
 
-    const videoMap = new Map(
-      videos.map((video) => [
-        video.id,
+    // 5. Get unique channel IDs
+    const channelIds = [
+      ...new Set(
+        videos
+          .map((video) => video.snippet?.channelId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    // 6. Get channel information
+    const channelResponse = await this.youtubeService.getChannels(channelIds);
+
+    const channels = channelResponse?.data.items ?? [];
+
+    const channelMap = new Map(
+      channels.map((channel) => [
+        channel.id,
         {
-          id: video.id!,
-          title: video.snippet?.title ?? '',
-
-          description: video.snippet?.description ?? '',
-
-          thumbnailUrl:
-            video.snippet?.thumbnails?.high?.url ??
-            video.snippet?.thumbnails?.medium?.url ??
-            video.snippet?.thumbnails?.default?.url ??
+          channelAvatar:
+            channel.snippet?.thumbnails?.high?.url ??
+            channel.snippet?.thumbnails?.medium?.url ??
+            channel.snippet?.thumbnails?.default?.url ??
             '',
 
-          channel: {
-            channelId: video.snippet?.channelId ?? '',
-
-            channelTitle: video.snippet?.channelTitle ?? '',
-
-            channelAvatar: '',
-            subscriberCount: null,
-          },
-
-          publishedAt: video.snippet?.publishedAt ?? '',
-
-          duration: video.contentDetails?.duration ?? null,
-
-          viewCount: video.statistics?.viewCount ?? null,
-
-          likeCount: video.statistics?.likeCount ?? null,
-
-          commentCount: video.statistics?.commentCount
-            ? Number(video.statistics.commentCount)
-            : undefined,
+          subscriberCount: channel.statistics?.subscriberCount
+            ? Number(channel.statistics.subscriberCount)
+            : null,
         },
       ]),
     );
 
-    // 5. Combine PostgreSQL history + YouTube data.
+    // 7. Create video map
+    const videoMap = new Map(
+      videos.map((video) => {
+        const channelId = video.snippet?.channelId ?? '';
+        const channel = channelMap.get(channelId);
+
+        return [
+          video.id,
+          {
+            id: video.id!,
+            title: video.snippet?.title ?? '',
+
+            description: video.snippet?.description ?? '',
+
+            thumbnailUrl:
+              video.snippet?.thumbnails?.high?.url ??
+              video.snippet?.thumbnails?.medium?.url ??
+              video.snippet?.thumbnails?.default?.url ??
+              '',
+
+            channel: {
+              channelId,
+
+              channelTitle: video.snippet?.channelTitle ?? '',
+
+              channelAvatar: channel?.channelAvatar ?? '',
+
+              subscriberCount: channel?.subscriberCount ?? null,
+            },
+
+            publishedAt: video.snippet?.publishedAt ?? '',
+
+            duration: video.contentDetails?.duration ?? null,
+
+            viewCount: video.statistics?.viewCount ?? null,
+
+            likeCount: video.statistics?.likeCount ?? null,
+
+            commentCount: video.statistics?.commentCount
+              ? Number(video.statistics.commentCount)
+              : undefined,
+          },
+        ];
+      }),
+    );
+
+    // 8. Combine PostgreSQL history + YouTube data
     const result = history.reduce<THistoryVideo[]>((result, item) => {
       const video = videoMap.get(item.videoId);
 
@@ -185,7 +223,7 @@ export class HistoryService {
       return result;
     }, []);
 
-    // 6. Cache final response.
+    // 9. Cache final response
     await this.redis.set(cacheKey, result, this.HISTORY_CACHE_TTL);
 
     return result;
