@@ -45,13 +45,15 @@ export default function RootLayout({
             speed={200}
             shadow="0 0 10px hsl(var(--secondary)),0 0 5px hsl(var(--secondary-light))"
             template='<div class="bar" role="bar"><div class="peg"></div></div> 
-  <div class="spinner" style="top: 65px" role="spinner"><div class="spinner-icon"></div></div>'
+      <div class="spinner" style="top: 65px" role="spinner"><div class="spinner-icon"></div></div>'
             zIndex={999999}
           />
-          <div className="mx-auto flex w-full max-w-7xl flex-col px-1 pb-6 pt-3 sm:px-1 lg:px-6">
+
+          <div className="flex w-full flex-col px-1 pb-6 pt-3 sm:px-1 lg:px-6">
             <div className="mb-4">
               <Navbar />
             </div>
+
             <main className="flex-1 pt-8">{children}</main>
           </div>
         </body>
